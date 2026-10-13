@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js" onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js';s.onload=function(){if(window.applyFilters)applyFilters();};document.head.appendChild(s);"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
@@ -570,9 +570,9 @@ const FIELD_ALIASES = {
   action_desc:   ['actiondescription','actiondesc','actiondesk','deskripsiaksi'],
   keterangan:    ['keterangan','catatan','notes','deskripsi','=description'],
   rca:           [],  // RCA otomatis dari Action Description; kolom RCA terpisah hanya lewat pengaturan manual
-  tgl_create:    ['tanggalcreate','createdat','tglcreate','tanggaldibuat','createddate','waktucreate'],
-  tgl_visit:     ['tanggalvisit','tglvisit','visitdate','tanggalkunjungan','waktuvisit'],
-  tgl_close:     ['tanggalclose','tglclose','closedat','tanggalselesai','completeddate','closedate','tanggalclosed','waktuclose']
+  tgl_create:    ['tanggalcreate','createdat','tglcreate','tanggaldibuat','createddate','waktucreate','createtime','created','create'],
+  tgl_visit:     ['tanggalvisit','tglvisit','visitdate','tanggalkunjungan','waktuvisit','visittime','visit','kunjungan'],
+  tgl_close:     ['tanggalclose','tglclose','closedat','tanggalselesai','completeddate','closedate','tanggalclosed','waktuclose','closetime','waktuselesai','tglselesai','finishdate','finishtime','completedat','completed','closed','close','selesai']
 };
 const FIELD_LABELS = {
   id_wo:'ID WO / Ticket', customer_id:'Customer ID', nama_pelanggan:'Nama Pelanggan',
@@ -721,7 +721,7 @@ function deriveRca(ad, manual){
   let explain;
   if(text){
     const snip = text.length>240 ? text.slice(0,237)+'…' : text;
-    explain = (desc ? desc+' ' : '') + 'Berdasarkan Action Description, yang tercatat: "'+snip+'"';
+    explain = (desc ? desc+' ' : 'Penyebab/kondisi dicatat pada Action Description. ') + 'Tindakan/catatan teknisi: '+snip;
   } else {
     explain = 'Action Description tidak tersedia.';
   }
@@ -833,9 +833,14 @@ function renderMappingNotes(){
   const pc = CAT_KEYS.reduce((a,c)=>a+PHOTO_COLS[c].length,0);
   if(!pc) items.push(['⚠️','Kolom dokumentasi foto tidak ditemukan. Tombol Lihat Foto akan menampilkan "Dokumentasi foto belum tersedia". Atur kolom foto di ⚙ Kolom.']);
 
+  if(PHOTO_AUTO_NOTE) items.push(['ℹ️',PHOTO_AUTO_NOTE]);
+  if(!STATUS_FILTER_ON && COLMAP.status) items.push(['ℹ️',`Tidak ada baris dengan nilai selesai/close pada kolom Status (header "${COLMAP.status}"), sehingga semua baris ditampilkan sebagai WO selesai.`]);
+
   const el = document.getElementById('warnBanner');
   if(!items.length){ el.classList.remove('show'); el.innerHTML=''; return; }
-  el.innerHTML = '<ul>'+items.map(([ic,t])=>`<li>${ic} ${esc(t)}</li>`).join('')+'</ul>';
+  const hdrList = RAW_HEADERS.map((h,i)=>`${colLetter(i)} = ${esc(h)}`).join(' &nbsp;|&nbsp; ');
+  el.innerHTML = '<ul>'+items.map(([ic,t])=>`<li>${ic} ${esc(t)}</li>`).join('')+'</ul>'+
+    `<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:600;">Lihat daftar header yang terbaca dari Spreadsheet (${RAW_HEADERS.length} kolom)</summary><div style="margin-top:6px;font-size:11.5px;line-height:1.7;word-break:break-word;">${hdrList}</div></details>`;
   el.classList.add('show');
 }
 
@@ -909,6 +914,18 @@ function onDataLoaded(){
 function processRows(){
   if(!LAST) return;
   const rows = LAST.rows;
+  PHOTO_AUTO_NOTE = '';
+  if(CAT_KEYS.every(c=>!PHOTO_COLS[c].length)){
+    const byVal = detectPhotoByValues();
+    byVal.forEach(h=>{
+      const n = norm(h);
+      if(/before|sebelum/.test(n)) PHOTO_COLS.before.push(h);
+      else if(/proses|process|pengerjaan|saat|progress/.test(n)) PHOTO_COLS.proses.push(h);
+      else if(/after|sesudah|hasil|selesai/.test(n)) PHOTO_COLS.after.push(h);
+      else PHOTO_COLS.umum.push(h);
+    });
+    if(byVal.length) PHOTO_AUTO_NOTE = 'Kolom foto dideteksi dari isi sel (berisi tautan foto/Drive): '+byVal.join(', ')+'. Cek di ⚙ Kolom jika ada yang keliru.';
+  }
   ALL_ROWS = rows.map((r,i)=>{
     const get = (field)=> COLMAP[field] ? String(r[COLMAP[field]]==null?'':r[COLMAP[field]]).trim() : '';
     const photos = { before:[], proses:[], after:[], umum:[] };
@@ -957,19 +974,44 @@ function processRows(){
     };
   });
 
+  STATUS_FILTER_ON = ALL_ROWS.some(matchClosed);
   renderMappingNotes();
   buildFilterOptions();
   applyFilters();
   buildColumnMappingDrawer();
 }
 
+/* Jika header foto tidak dikenali, cari kolom yang isinya tautan foto/Drive (berdasarkan isi sel) */
+function detectPhotoByValues(){
+  const rows = LAST.rows.slice(0, 400);
+  const taken = new Set(Object.values(COLMAP).filter(Boolean));
+  const found = [];
+  RAW_HEADERS.forEach(h=>{
+    if(taken.has(h)) return;
+    let filled=0, urls=0;
+    rows.forEach(r=>{
+      const v = r[h];
+      if(v==null || String(v).trim()==='') return;
+      filled++;
+      if(/https?:\/\/(drive\.google|docs\.google|lh\d*\.googleusercontent|.*\.(jpe?g|png|webp|gif))/i.test(String(v))) urls++;
+    });
+    if(filled>0 && urls/filled>=0.6) found.push(h);
+  });
+  return found;
+}
+
 /* ============================================================
    FILTERS
    ============================================================ */
-function isClosed(row){
-  const s = norm(row.status);
+let STATUS_FILTER_ON = true;
+let PHOTO_AUTO_NOTE = '';
+function matchClosed(row){
   if(!row.status) return true;
-  return /selesai|close|closed|done|complete/.test(s);
+  return /selesai|close|closed|done|complete|finish/.test(norm(row.status));
+}
+function isClosed(row){
+  // Jika tidak ada satu pun baris berstatus selesai, anggap sheet ini memang berisi WO selesai (tampilkan semua)
+  return STATUS_FILTER_ON ? matchClosed(row) : true;
 }
 
 function buildFilterOptions(){
@@ -1044,7 +1086,7 @@ function applyFilters(){
   FILTERED_ROWS = rows;
   document.getElementById('resultCount').textContent = `${rows.length} WO ditemukan`;
   renderKpi();
-  renderCharts();
+  try{ renderCharts(); }catch(e){ console.error('Grafik gagal:', e); }
   renderTable();
   renderMitraSummary();
   renderStasiunSummary();
@@ -1096,6 +1138,13 @@ function renderKpi(){
    ============================================================ */
 let chartTrend, chartKategori, chartMitra, chartStasiun;
 function renderCharts(){
+  if(typeof Chart==='undefined'){
+    document.querySelectorAll('.chart-card canvas').forEach(c=>{
+      if(!c.nextElementSibling) c.insertAdjacentHTML('afterend','<div class="empty-state" style="padding:24px 10px;">Grafik tidak dapat dimuat (library Chart.js diblokir/offline). Tabel & foto tetap berfungsi.</div>');
+    });
+    return;
+  }
+  document.querySelectorAll('.chart-card .empty-state').forEach(e=>e.remove());
   const rows = FILTERED_ROWS;
 
   const byDate = {};
@@ -1163,8 +1212,8 @@ function fotoBadge(status){
 
 function rcaCell(r){
   if(!r.rca) return '<span style="color:var(--text-mute)">-</span>';
-  const sub = r.ad ? (r.ad.length>70 ? r.ad.slice(0,67)+'…' : r.ad) : '';
-  return `<span class="rca-tag">${esc(r.rca)}</span>${sub?`<span class="rca-sub" title="${esc(r.ad)}">${esc(sub)}</span>`:''}`;
+  const sub = r.rcaExplain ? (r.rcaExplain.length>130 ? r.rcaExplain.slice(0,127)+'…' : r.rcaExplain) : '';
+  return `<span class="rca-tag">${esc(r.rca)}</span>${sub?`<span class="rca-sub" title="${esc(r.rcaExplain)}">${esc(sub)}</span>`:''}`;
 }
 
 function renderTable(){
