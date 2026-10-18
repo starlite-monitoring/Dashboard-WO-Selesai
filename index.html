@@ -445,7 +445,7 @@ th.sortable{cursor:pointer;} .rtable-wrap th.sortable:hover{color:var(--blue);}
 </head>
 <body>
 
-<div class="loading" id="loading"><div class="spin"></div><div style="font-weight:600;color:var(--mute);font-size:13px;">Memuat data WO Visit…</div></div>
+<div class="loading" id="loading"><div class="spin"></div><div id="loadTxt" style="font-weight:600;color:var(--mute);font-size:13px;">Memuat data WO Visit…</div><div id="loadBtns" style="display:none;gap:10px;margin-top:12px;font-size:12.5px;"><button class="lnk" onclick="document.getElementById('loading').style.display='none'">Tutup</button><button class="lnk" onclick="document.getElementById('fileInput').click()">Muat file CSV</button></div></div>
 
 <div class="app" id="app">
   <div class="scrim" id="scrim"></div>
@@ -838,28 +838,52 @@ function setStatus(ok){
 function showErr(m){ const e=$('errBanner'); e.textContent=m; e.classList.add('show'); }
 function clearErr(){ $('errBanner').classList.remove('show'); }
 const CSV_URLS=[CSV_URL, CSV_URL+'&_=__T__', "https://docs.google.com/spreadsheets/d/1Ki9oR-ODT7unF35LXDKR5fRFKxWSe87ckTVZLyzMz9M/gviz/tq?tqx=out:csv&gid=585283091"];
+const FETCH_TIMEOUT=12000;
+function fetchTimeout(u){
+  return new Promise((ok,no)=>{
+    const ac=(typeof AbortController!=='undefined')?new AbortController():null;
+    const t=setTimeout(()=>{ try{ac&&ac.abort();}catch(e){} no(new Error('waktu habis (>'+FETCH_TIMEOUT/1000+' dtk)')); },FETCH_TIMEOUT);
+    fetch(u,{cache:'no-store',signal:ac?ac.signal:undefined}).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+      .then(x=>{ clearTimeout(t); ok(x); },e=>{ clearTimeout(t); no(e); });
+  });
+}
 async function fetchCsv(){
   let lastErr=null;
   for(const u0 of CSV_URLS){
     const u=u0.replace('__T__',Date.now());
-    try{ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); const t=await r.text();
+    try{ const t=await fetchTimeout(u);
       if(/^\s*<(!doctype|html)/i.test(t)) throw new Error('Respons bukan CSV (sheet tidak publik?)'); return t; }catch(e){ lastErr=e; }
   }
   throw lastErr||new Error('Tidak dapat terhubung');
 }
+/* cache CSV terakhir (IndexedDB) agar dashboard tetap tampil walau jaringan lambat */
+function idb(){ return new Promise((ok,no)=>{ try{ const q=indexedDB.open('starlite_wo_cache',1); q.onupgradeneeded=()=>q.result.createObjectStore('kv'); q.onsuccess=()=>ok(q.result); q.onerror=()=>no(q.error); }catch(e){ no(e); } }); }
+function cacheSet(txt){ idb().then(d=>{ const tx=d.transaction('kv','readwrite'); tx.objectStore('kv').put({txt,ts:Date.now()},'csv'); }).catch(()=>{}); }
+function cacheGet(){ return idb().then(d=>new Promise(ok=>{ const q=d.transaction('kv').objectStore('kv').get('csv'); q.onsuccess=()=>ok(q.result||null); q.onerror=()=>ok(null); })).catch(()=>null); }
+let RETRY_T=null, LOAD_TICK=null, HAS_DATA=false;
+function stopLoadUi(){ clearInterval(LOAD_TICK); LOAD_TICK=null; $('loading').style.display='none'; }
 function loadData(showLoader){
-  if(loading) return; loading=true; $('refreshBtn').disabled=true;
-  if(showLoader) $('loading').style.display='flex';
-  const done=()=>{ loading=false; $('refreshBtn').disabled=false; $('loading').style.display='none'; };
-  fetchCsv().then(txt=>{
-    const res=Papa.parse(txt,{skipEmptyLines:true});
-    clearErr(); handleParsed(res.data); setStatus(true); if(!showLoader) toast('Data diperbarui'); done();
-  }).catch(err=>{
-    console.error(err);
-    const e=$('errBanner'); e.innerHTML='Gagal memuat Spreadsheet ('+esc(err&&err.message||'jaringan')+'). Pastikan sheet dipublikasikan ke web, lalu <button class="lnk" id="errRetry">coba lagi</button> atau <button class="lnk" id="errUpload">muat file CSV</button>. Jika file ini dibuka dari pratinjau yang memblokir jaringan, buka langsung di browser atau unggah ke GitHub Pages.';
+  if(loading) return; loading=true; $('refreshBtn').disabled=true; clearTimeout(RETRY_T);
+  const ld=$('loading'), lt=$('loadTxt'), lb=$('loadBtns'); let sec=0, finished=false;
+  if(showLoader && !HAS_DATA){ ld.style.display='flex'; lb.style.display='none'; lt.textContent='Memuat data WO Visit…';
+    LOAD_TICK=setInterval(()=>{ sec++; lt.textContent='Memuat data WO Visit… '+sec+' dtk'; if(sec>=8) lb.style.display='flex'; },1000); }
+  const done=()=>{ if(finished) return; finished=true; clearTimeout(wd); loading=false; $('refreshBtn').disabled=false; stopLoadUi(); };
+  const fail=err=>{
+    console.error(err); if(finished) return;
+    const e=$('errBanner'); e.innerHTML='Gagal memuat Spreadsheet ('+esc(err&&err.message||'jaringan')+')'+(HAS_DATA?'. Menampilkan data terakhir. ':'. ')+'Mencoba lagi otomatis tiap 30 detik. <button class="lnk" id="errRetry">coba lagi sekarang</button> atau <button class="lnk" id="errUpload">muat file CSV</button>.';
     e.classList.add('show'); $('errRetry').onclick=()=>loadData(true); $('errUpload').onclick=()=>$('fileInput').click();
-    setStatus(false); done();
-  });
+    setStatus(false); done(); RETRY_T=setTimeout(()=>loadData(false),30000);
+  };
+  const wd=setTimeout(()=>fail(new Error('proses terlalu lama')),90000);
+  fetchCsv().then(txt=>{
+    if(finished) return;
+    const res=Papa.parse(txt,{skipEmptyLines:true});
+    clearErr(); handleParsed(res.data); HAS_DATA=true; setStatus(true); cacheSet(txt); if(!showLoader) toast('Data diperbarui'); done();
+  }).catch(fail);
+}
+function startLoad(){
+  /* tampilkan data cache dulu (jika ada), lalu ambil data terbaru */
+  cacheGet().then(c=>{ if(c&&c.txt){ try{ const res=Papa.parse(c.txt,{skipEmptyLines:true}); handleParsed(res.data); HAS_DATA=true; LAST_OK=new Date(c.ts); setStatus(true); $('updateText').textContent=fmtDT(new Date(c.ts))+' (cache)'; stopLoadUi(); }catch(e){} } }).catch(()=>{}).then(()=>loadData(true));
 }
 function loadFile(file){
   if(!file) return;
@@ -1590,7 +1614,7 @@ $('csvBtn').addEventListener('click',exportCsv); $('xlsxBtn').addEventListener('
 applyTheme(document.documentElement.dataset.theme||'light');
 showView((location.hash||'#dashboard').slice(1));
 refreshIcons();
-loadData(true);
+startLoad();
 setInterval(()=>loadData(false),AUTO_REFRESH_MINUTES*60*1000);
 </script>
 </body>
