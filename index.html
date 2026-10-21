@@ -455,6 +455,41 @@ th.sortable{cursor:pointer;} .rtable-wrap th.sortable:hover{color:var(--blue);}
 .scope-pop .kat{display:flex;gap:8px;align-items:flex-start;padding:6px 0;font-size:13px;} .scope-pop .kat span.c{margin-left:auto;color:var(--mute);font-size:12px;}
 .scope-pop .cnt{background:var(--blue-soft);border-radius:10px;padding:9px 11px;font-size:12.5px;margin:10px 0;line-height:1.5;} .scope-pop .act{display:flex;gap:8px;flex-wrap:wrap;}
 #installBtn{display:none;}
+
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px;}
+.photo-grid figure{margin:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card-2);}
+.photo-grid img{display:block;width:100%;height:130px;object-fit:cover;background:var(--gray-soft);}
+.photo-grid figcaption{font-size:11px;color:var(--mute);padding:6px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ph-fail{display:grid;place-items:center;height:130px;font-size:12px;font-weight:600;color:var(--blue);}
+.mb-strip{display:none;margin:0 0 14px;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);}
+.mb-strip.show{display:block;} .mb-strip h4{margin:0 0 8px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.mb-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;} .mb-c{border:1px solid var(--line);border-radius:12px;padding:9px 11px;background:var(--card-2);}
+.mb-c .l{font-size:11px;font-weight:700;color:var(--mute);text-transform:uppercase;} .mb-c .m{font-size:19px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;} .mb-c .s{font-size:11.5px;color:var(--mute);}
+.mb-c .d{font-weight:700;} .mb-c .d.ok{color:var(--green-ink);} .mb-c .d.bad{color:var(--red-ink);}
+.fu-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;} .fu-tools input[type=search],.fu-tools select{padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink);font:500 13px Inter,sans-serif;min-width:200px;}
+.fu-tools label.chk{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink-2);}
+.fu-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;} .fu-sum .c{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:12px 14px;box-shadow:var(--shadow);} .fu-sum .l{font-size:11px;font-weight:700;color:var(--mute);text-transform:uppercase;} .fu-sum .n{font-size:24px;font-weight:800;}
+details.fu{border:1px solid var(--line);border-radius:14px;background:var(--card);margin-bottom:10px;box-shadow:var(--shadow);} details.fu>summary{list-style:none;cursor:pointer;display:flex;gap:12px;align-items:center;padding:12px 14px;flex-wrap:wrap;} details.fu>summary::-webkit-details-marker{display:none;}
+.fu-av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;flex:none;} .fu-nm{flex:1;min-width:180px;} .fu-nm b{display:block;font-size:15px;} .fu-nm small{color:var(--mute);font-size:12px;}
+.fu-st{display:flex;gap:16px;} .fu-st div{text-align:center;} .fu-st small{display:block;font-size:10px;font-weight:700;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;} .fu-st b{font-size:18px;} .fu-st b.u{color:var(--red);}
+.fu-body{padding:0 14px 14px;} .fu-body table{width:100%;border-collapse:collapse;font-size:12.5px;} .fu-body th,.fu-body td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);} .fu-body th{font-size:11px;color:var(--mute);text-transform:uppercase;}
+.fu-ov{position:fixed;inset:0;background:rgba(15,27,51,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:16px;} .fu-ov.show{display:flex;}
+.fu-md{background:var(--card);border-radius:16px;width:min(640px,100%);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.35);} .fu-md h3{margin:0;padding:16px 18px;border-bottom:1px solid var(--line);font-size:16px;}
+.fu-md textarea{margin:14px 18px 6px;height:340px;font:12.5px/1.5 ui-monospace,Consolas,monospace;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card-2);color:var(--ink);resize:vertical;} .fu-md .hint{margin:0 18px 10px;font-size:12px;color:var(--mute);} .fu-md .ft{display:flex;gap:10px;justify-content:flex-end;padding:12px 18px;border-top:1px solid var(--line);}
+@media(max-width:900px){
+  .mb-grid{grid-template-columns:repeat(2,1fr);} .fu-sum{grid-template-columns:repeat(2,1fr);}
+  .sidebar{position:fixed !important;left:0;right:0;bottom:0;top:auto;height:auto !important;width:100% !important;transform:none !important;flex-direction:row;border-right:0;border-top:1px solid var(--line);z-index:100;padding:6px 6px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(15,27,51,.14);}
+  .sidebar .brand,.sidebar .side-label,.sidebar .collapse-btn{display:none !important;}
+  .nav{display:flex !important;flex-direction:row !important;flex:1;gap:2px;margin:0;padding:0;width:100%;overflow:visible;}
+  .topbar{position:static !important;} .tb-right{flex-wrap:wrap;} .app{overflow-x:hidden;} body{overflow-x:hidden;}
+  .nav a{flex:1;flex-direction:column;gap:3px;font-size:10.5px;padding:7px 2px;text-align:center;justify-content:center;border-radius:10px;min-width:0;}
+  .nav a span{display:block !important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;} .nav a::before{display:none !important;}
+  .tb-left .menu-btn{display:none !important;} .main{padding-bottom:82px;} .tb-left h1{font-size:18px;} .hello{display:none;}
+  .topbar{gap:8px;} .tb-right{width:100%;gap:8px;} .mitra-top{flex:1 1 100%;order:-1;} .mitra-top input{width:100%;}
+  .scope-pop,.notif-pop{position:fixed !important;left:10px;right:10px;top:70px;width:auto !important;max-width:none;}
+  .content{padding-left:12px;padding-right:12px;} .fu-st{width:100%;justify-content:space-between;} .fu-md textarea{height:260px;}
+  .cbox.tall{min-height:260px;} table{font-size:12px;}
+}
 </style>
 </head>
 <body>
@@ -494,6 +529,7 @@ th.sortable{cursor:pointer;} .rtable-wrap th.sortable:hover{color:var(--blue);}
       <div class="view show" id="v-dashboard">
       <section class="kpi8" id="kpiGrid" aria-label="Statistik utama"></section>
       <div class="strip" id="strip"></div>
+      <div class="mb-strip" id="mbStrip"></div>
 
       <section class="two two-eq sec">
         <div class="card panel"><div class="panel-head"><div><h2>Komposisi Status WO</h2><div class="sub">Seluruh WO · Over SLA adalah indikator, bukan status</div></div></div>
@@ -509,7 +545,9 @@ th.sortable{cursor:pointer;} .rtable-wrap th.sortable:hover{color:var(--blue);}
 
       <section class="card panel sec" id="dailyChartSec">
         <div class="panel-head"><div><h2>WO Harian — CLOSE, OPEN, CANCEL</h2><div class="sub" id="dailySub"></div></div><div class="hint-scroll">↔ Geser grafik untuk melihat tanggal lain</div></div>
+        <div class="seg" id="dailyRange" style="margin:4px 0 10px"><button data-n="7">7 hari</button><button data-n="14">14 hari</button><button data-n="30">30 hari</button><button data-n="0">Semua</button></div>
         <div class="hscroll" id="dailyScroll"><div class="cbox tall" id="dailyBox"><canvas id="chDaily"></canvas></div></div>
+        <div class="rtable-wrap tall-wrap" id="dailyTbl" style="margin-top:12px;max-height:340px"></div>
         <div class="legend-note" id="dailyNote"></div>
       </section>
 
@@ -691,7 +729,7 @@ const LS_OVR='starlite_wo_ovr_v1'; let OVR={};
 try{ OVR=JSON.parse(localStorage.getItem(LS_OVR)||'{}')||{}; }catch(e){ OVR={}; }
 function saveOvr(){ try{ localStorage.setItem(LS_OVR,JSON.stringify(OVR)); return true; }catch(e){ toast('Penyimpanan browser diblokir; koreksi hanya berlaku selama halaman terbuka'); return false; } }
 function applyOvr(r){ r.rca=r.rca0; r.review=r.review0; r.why=r.why0; r.manual=false; const o=OVR[r.id]; r.ovr=o||null; if(o&&(r.st==='SELESAI'||r.st==='CANCEL')&&o.rca){ r.rca=o.rca; r.review=false; r.manual=true; r.why='RCA diisi manual'; } }
-const NAV=[['dashboard','layout-dashboard','Dashboard WO Visit'],['detail','clipboard-list','Detail WO Visit'],['kpi','trophy','KPI Mitra']];
+const NAV=[['dashboard','layout-dashboard','Dashboard WO Visit'],['detail','clipboard-list','Detail WO Visit'],['kpi','trophy','KPI Mitra'],['followup','send','Follow Up Mitra']];
 const LS_SCOPE='starlite_scope_v2';
 let KAT_ANY=true, SCOPE={from:'2026-05-01',to:'2027-01-31',kat:null,tiket:''}, SCOPE_INFO={raw:0,after:0,kats:{},tikets:{}};
 try{ const sc=JSON.parse(localStorage.getItem(LS_SCOPE)||'null'); if(sc) SCOPE=Object.assign(SCOPE,sc); }catch(e){}
@@ -715,7 +753,7 @@ const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 const nf = n => Number(n||0).toLocaleString('id-ID');
 const pct = (a,b) => b ? (a/b*100).toFixed(1).replace('.',',')+'%' : '0%';
 const ic = (n,cls) => svgIcon(n,cls);
-const ICONS={"copy": [["rect", {"width": "14", "height": "14", "x": "8", "y": "8", "rx": "2", "ry": "2"}], ["path", {"d": "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"}]], "download": [["path", {"d": "M12 15V3"}], ["path", {"d": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}], ["path", {"d": "m7 10 5 5 5-5"}]], "file-spreadsheet": [["path", {"d": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}], ["path", {"d": "M14 2v5a1 1 0 0 0 1 1h5"}], ["path", {"d": "M8 13h2"}], ["path", {"d": "M14 13h2"}], ["path", {"d": "M8 17h2"}], ["path", {"d": "M14 17h2"}]], "file-up": [["path", {"d": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}], ["path", {"d": "M14 2v5a1 1 0 0 0 1 1h5"}], ["path", {"d": "M12 12v6"}], ["path", {"d": "m15 15-3-3-3 3"}]], "menu": [["path", {"d": "M4 5h16"}], ["path", {"d": "M4 12h16"}], ["path", {"d": "M4 19h16"}]], "refresh-cw": [["path", {"d": "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"}], ["path", {"d": "M21 3v5h-5"}], ["path", {"d": "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"}], ["path", {"d": "M8 16H3v5"}]], "rotate-ccw": [["path", {"d": "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"}], ["path", {"d": "M3 3v5h5"}]], "search": [["path", {"d": "m21 21-4.34-4.34"}], ["circle", {"cx": "11", "cy": "11", "r": "8"}]], "settings": [["path", {"d": "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"}], ["circle", {"cx": "12", "cy": "12", "r": "3"}]], "x": [["path", {"d": "M18 6 6 18"}], ["path", {"d": "m6 6 12 12"}]], "calendar-clock": [["path", {"d": "M16 14v2.2l1.6 1"}], ["path", {"d": "M16 2v3"}], ["path", {"d": "M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"}], ["path", {"d": "M3 9h5.859"}], ["path", {"d": "M8 2v3"}], ["circle", {"cx": "16", "cy": "16", "r": "6"}]], "chevron-left": [["path", {"d": "m15 18-6-6 6-6"}]], "chevron-right": [["path", {"d": "m9 18 6-6-6-6"}]], "eye": [["path", {"d": "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"}], ["circle", {"cx": "12", "cy": "12", "r": "3"}]], "pencil": [["path", {"d": "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"}], ["path", {"d": "m15 5 4 4"}]], "upload": [["path", {"d": "M12 3v12"}], ["path", {"d": "m17 8-5-5-5 5"}], ["path", {"d": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}]], "layout-dashboard": [["rect", {"width": "7", "height": "9", "x": "3", "y": "3", "rx": "1"}], ["rect", {"width": "7", "height": "5", "x": "14", "y": "3", "rx": "1"}], ["rect", {"width": "7", "height": "9", "x": "14", "y": "12", "rx": "1"}], ["rect", {"width": "7", "height": "5", "x": "3", "y": "16", "rx": "1"}]], "search-check": [["path", {"d": "m8 11 2 2 4-4"}], ["circle", {"cx": "11", "cy": "11", "r": "8"}], ["path", {"d": "m21 21-4.3-4.3"}]], "clipboard-list": [["rect", {"width": "8", "height": "4", "x": "8", "y": "2", "rx": "1", "ry": "1"}], ["path", {"d": "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"}], ["path", {"d": "M12 11h4"}], ["path", {"d": "M12 16h4"}], ["path", {"d": "M8 11h.01"}], ["path", {"d": "M8 16h.01"}]], "users": [["path", {"d": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"}], ["path", {"d": "M16 3.128a4 4 0 0 1 0 7.744"}], ["path", {"d": "M22 21v-2a4 4 0 0 0-3-3.87"}], ["circle", {"cx": "9", "cy": "7", "r": "4"}]], "layers": [["path", {"d": "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"}], ["path", {"d": "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"}], ["path", {"d": "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"}]], "circle-check": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "m16 9-5.5 5.5L8 12"}]], "hourglass": [["path", {"d": "M5 22h14"}], ["path", {"d": "M5 2h14"}], ["path", {"d": "M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"}], ["path", {"d": "M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"}]], "ban": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "M4.929 4.929 19.07 19.071"}]], "triangle-alert": [["path", {"d": "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"}], ["path", {"d": "M12 9v4"}], ["path", {"d": "M12 17h.01"}]], "shield-check": [["path", {"d": "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"}], ["path", {"d": "m9 12 2 2 4-4"}]], "timer": [["line", {"x1": "10", "x2": "14", "y1": "2", "y2": "2"}], ["line", {"x1": "12", "x2": "15", "y1": "14", "y2": "11"}], ["circle", {"cx": "12", "cy": "14", "r": "8"}]], "trophy": [["path", {"d": "M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"}], ["path", {"d": "M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"}], ["path", {"d": "M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"}], ["path", {"d": "M4 22h16"}], ["path", {"d": "M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"}], ["path", {"d": "M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"}]], "award": [["path", {"d": "m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"}], ["circle", {"cx": "12", "cy": "8", "r": "6"}]], "activity": [["path", {"d": "M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"}]], "target": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["circle", {"cx": "12", "cy": "12", "r": "6"}], ["circle", {"cx": "12", "cy": "12", "r": "2"}]], "calendar-check": [["path", {"d": "M8 2v3"}], ["path", {"d": "M16 2v3"}], ["rect", {"x": "3", "y": "3", "width": "18", "height": "18", "rx": "2"}], ["path", {"d": "M3 9h18"}], ["path", {"d": "m9 15 2 2 4-4"}]], "trending-up": [["path", {"d": "M16 7h6v6"}], ["path", {"d": "m22 7-8.5 8.5-5-5L2 17"}]], "list-checks": [["path", {"d": "M13 5h8"}], ["path", {"d": "M13 12h8"}], ["path", {"d": "M13 19h8"}], ["path", {"d": "m3 17 2 2 4-4"}], ["path", {"d": "m3 7 2 2 4-4"}]], "sun": [["circle", {"cx": "12", "cy": "12", "r": "4"}], ["path", {"d": "M12 2v2"}], ["path", {"d": "M12 20v2"}], ["path", {"d": "m4.93 4.93 1.41 1.41"}], ["path", {"d": "m17.66 17.66 1.41 1.41"}], ["path", {"d": "M2 12h2"}], ["path", {"d": "M20 12h2"}], ["path", {"d": "m6.34 17.66-1.41 1.41"}], ["path", {"d": "m19.07 4.93-1.41 1.41"}]], "moon": [["path", {"d": "M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"}]], "trash-2": [["path", {"d": "M10 11v6"}], ["path", {"d": "M14 11v6"}], ["path", {"d": "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"}], ["path", {"d": "M3 6h18"}], ["path", {"d": "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"}]], "save": [["path", {"d": "M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"}], ["path", {"d": "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"}], ["path", {"d": "M7 3v4a1 1 0 0 0 1 1h7"}]], "bell": [["path", {"d": "M10.268 21a2 2 0 0 0 3.464 0"}], ["path", {"d": "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"}]], "bell-ring": [["path", {"d": "M10.268 21a2 2 0 0 0 3.464 0"}], ["path", {"d": "M22 8c0-2.3-.8-4.3-2-6"}], ["path", {"d": "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"}], ["path", {"d": "M4 2C2.8 3.7 2 5.7 2 8"}]], "clock": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "M12 6v6l4 2"}]], "package-plus": [["path", {"d": "M12 22V12"}], ["path", {"d": "M16 17h6"}], ["path", {"d": "M19 14v6"}], ["path", {"d": "M21 10.535V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.729l7 4a2 2 0 0 0 2 .001l1.675-.955"}], ["path", {"d": "M3.29 7 12 12l8.71-5"}], ["path", {"d": "m7.5 4.27 8.997 5.148"}]], "list-filter": [["path", {"d": "M3 6h18"}], ["path", {"d": "M7 12h10"}], ["path", {"d": "M10 18h4"}]]};
+const ICONS={"copy": [["rect", {"width": "14", "height": "14", "x": "8", "y": "8", "rx": "2", "ry": "2"}], ["path", {"d": "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"}]], "download": [["path", {"d": "M12 15V3"}], ["path", {"d": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}], ["path", {"d": "m7 10 5 5 5-5"}]], "file-spreadsheet": [["path", {"d": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}], ["path", {"d": "M14 2v5a1 1 0 0 0 1 1h5"}], ["path", {"d": "M8 13h2"}], ["path", {"d": "M14 13h2"}], ["path", {"d": "M8 17h2"}], ["path", {"d": "M14 17h2"}]], "file-up": [["path", {"d": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}], ["path", {"d": "M14 2v5a1 1 0 0 0 1 1h5"}], ["path", {"d": "M12 12v6"}], ["path", {"d": "m15 15-3-3-3 3"}]], "menu": [["path", {"d": "M4 5h16"}], ["path", {"d": "M4 12h16"}], ["path", {"d": "M4 19h16"}]], "refresh-cw": [["path", {"d": "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"}], ["path", {"d": "M21 3v5h-5"}], ["path", {"d": "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"}], ["path", {"d": "M8 16H3v5"}]], "rotate-ccw": [["path", {"d": "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"}], ["path", {"d": "M3 3v5h5"}]], "search": [["path", {"d": "m21 21-4.34-4.34"}], ["circle", {"cx": "11", "cy": "11", "r": "8"}]], "settings": [["path", {"d": "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"}], ["circle", {"cx": "12", "cy": "12", "r": "3"}]], "x": [["path", {"d": "M18 6 6 18"}], ["path", {"d": "m6 6 12 12"}]], "calendar-clock": [["path", {"d": "M16 14v2.2l1.6 1"}], ["path", {"d": "M16 2v3"}], ["path", {"d": "M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"}], ["path", {"d": "M3 9h5.859"}], ["path", {"d": "M8 2v3"}], ["circle", {"cx": "16", "cy": "16", "r": "6"}]], "chevron-left": [["path", {"d": "m15 18-6-6 6-6"}]], "chevron-right": [["path", {"d": "m9 18 6-6-6-6"}]], "eye": [["path", {"d": "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"}], ["circle", {"cx": "12", "cy": "12", "r": "3"}]], "pencil": [["path", {"d": "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"}], ["path", {"d": "m15 5 4 4"}]], "upload": [["path", {"d": "M12 3v12"}], ["path", {"d": "m17 8-5-5-5 5"}], ["path", {"d": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}]], "layout-dashboard": [["rect", {"width": "7", "height": "9", "x": "3", "y": "3", "rx": "1"}], ["rect", {"width": "7", "height": "5", "x": "14", "y": "3", "rx": "1"}], ["rect", {"width": "7", "height": "9", "x": "14", "y": "12", "rx": "1"}], ["rect", {"width": "7", "height": "5", "x": "3", "y": "16", "rx": "1"}]], "search-check": [["path", {"d": "m8 11 2 2 4-4"}], ["circle", {"cx": "11", "cy": "11", "r": "8"}], ["path", {"d": "m21 21-4.3-4.3"}]], "clipboard-list": [["rect", {"width": "8", "height": "4", "x": "8", "y": "2", "rx": "1", "ry": "1"}], ["path", {"d": "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"}], ["path", {"d": "M12 11h4"}], ["path", {"d": "M12 16h4"}], ["path", {"d": "M8 11h.01"}], ["path", {"d": "M8 16h.01"}]], "users": [["path", {"d": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"}], ["path", {"d": "M16 3.128a4 4 0 0 1 0 7.744"}], ["path", {"d": "M22 21v-2a4 4 0 0 0-3-3.87"}], ["circle", {"cx": "9", "cy": "7", "r": "4"}]], "layers": [["path", {"d": "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"}], ["path", {"d": "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"}], ["path", {"d": "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"}]], "circle-check": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "m16 9-5.5 5.5L8 12"}]], "hourglass": [["path", {"d": "M5 22h14"}], ["path", {"d": "M5 2h14"}], ["path", {"d": "M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"}], ["path", {"d": "M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"}]], "ban": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "M4.929 4.929 19.07 19.071"}]], "triangle-alert": [["path", {"d": "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"}], ["path", {"d": "M12 9v4"}], ["path", {"d": "M12 17h.01"}]], "shield-check": [["path", {"d": "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"}], ["path", {"d": "m9 12 2 2 4-4"}]], "timer": [["line", {"x1": "10", "x2": "14", "y1": "2", "y2": "2"}], ["line", {"x1": "12", "x2": "15", "y1": "14", "y2": "11"}], ["circle", {"cx": "12", "cy": "14", "r": "8"}]], "trophy": [["path", {"d": "M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"}], ["path", {"d": "M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"}], ["path", {"d": "M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"}], ["path", {"d": "M4 22h16"}], ["path", {"d": "M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"}], ["path", {"d": "M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"}]], "award": [["path", {"d": "m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"}], ["circle", {"cx": "12", "cy": "8", "r": "6"}]], "activity": [["path", {"d": "M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"}]], "target": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["circle", {"cx": "12", "cy": "12", "r": "6"}], ["circle", {"cx": "12", "cy": "12", "r": "2"}]], "calendar-check": [["path", {"d": "M8 2v3"}], ["path", {"d": "M16 2v3"}], ["rect", {"x": "3", "y": "3", "width": "18", "height": "18", "rx": "2"}], ["path", {"d": "M3 9h18"}], ["path", {"d": "m9 15 2 2 4-4"}]], "trending-up": [["path", {"d": "M16 7h6v6"}], ["path", {"d": "m22 7-8.5 8.5-5-5L2 17"}]], "list-checks": [["path", {"d": "M13 5h8"}], ["path", {"d": "M13 12h8"}], ["path", {"d": "M13 19h8"}], ["path", {"d": "m3 17 2 2 4-4"}], ["path", {"d": "m3 7 2 2 4-4"}]], "sun": [["circle", {"cx": "12", "cy": "12", "r": "4"}], ["path", {"d": "M12 2v2"}], ["path", {"d": "M12 20v2"}], ["path", {"d": "m4.93 4.93 1.41 1.41"}], ["path", {"d": "m17.66 17.66 1.41 1.41"}], ["path", {"d": "M2 12h2"}], ["path", {"d": "M20 12h2"}], ["path", {"d": "m6.34 17.66-1.41 1.41"}], ["path", {"d": "m19.07 4.93-1.41 1.41"}]], "moon": [["path", {"d": "M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"}]], "trash-2": [["path", {"d": "M10 11v6"}], ["path", {"d": "M14 11v6"}], ["path", {"d": "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"}], ["path", {"d": "M3 6h18"}], ["path", {"d": "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"}]], "save": [["path", {"d": "M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"}], ["path", {"d": "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"}], ["path", {"d": "M7 3v4a1 1 0 0 0 1 1h7"}]], "bell": [["path", {"d": "M10.268 21a2 2 0 0 0 3.464 0"}], ["path", {"d": "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"}]], "bell-ring": [["path", {"d": "M10.268 21a2 2 0 0 0 3.464 0"}], ["path", {"d": "M22 8c0-2.3-.8-4.3-2-6"}], ["path", {"d": "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"}], ["path", {"d": "M4 2C2.8 3.7 2 5.7 2 8"}]], "clock": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "M12 6v6l4 2"}]], "package-plus": [["path", {"d": "M12 22V12"}], ["path", {"d": "M16 17h6"}], ["path", {"d": "M19 14v6"}], ["path", {"d": "M21 10.535V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.729l7 4a2 2 0 0 0 2 .001l1.675-.955"}], ["path", {"d": "M3.29 7 12 12l8.71-5"}], ["path", {"d": "m7.5 4.27 8.997 5.148"}]], "list-filter": [["path", {"d": "M3 6h18"}], ["path", {"d": "M7 12h10"}], ["path", {"d": "M10 18h4"}]], "send": [["path", {"d": "M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"}], ["path", {"d": "m21.854 2.147-10.94 10.939"}]], "image": [["rect", {"width": "18", "height": "18", "x": "3", "y": "3", "rx": "2", "ry": "2"}], ["circle", {"cx": "9", "cy": "9", "r": "2"}], ["path", {"d": "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"}]], "clipboard-copy": [["rect", {"width": "8", "height": "4", "x": "8", "y": "2", "rx": "1", "ry": "1"}], ["path", {"d": "M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"}], ["path", {"d": "M16 4h2a2 2 0 0 1 2 2v4"}], ["path", {"d": "M21 14H11"}], ["path", {"d": "m15 10-4 4 4 4"}]]};
 function svgIcon(n,cls){ const d=ICONS[n]; if(!d) return ''; return `<svg xmlns="http://www.w3.org/2000/svg" class="lucide${cls?' '+cls:''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d.map(([t,a])=>`<${t} ${Object.entries(a).map(([k,v])=>`${k}="${v}"`).join(' ')}/>`).join('')}</svg>`; }
 function refreshIcons(){ document.querySelectorAll('i[data-lucide]').forEach(i=>{ const s=svgIcon(i.getAttribute('data-lucide'),i.getAttribute('class')||''); if(s) i.outerHTML=s; }); }
 function colLetter(i){ let s=''; i=i+1; while(i>0){ const m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26);} return s; }
@@ -827,9 +865,12 @@ function composeRca(av,aw,af){
   else if(/reposisi|pindah|relokasi|rapikan|dirapikan/.test(t)) act='Reposisi/perapihan';
   else if(RE.edukasi.test(t)) act='Edukasi pelanggan';
   else if(RE.auto.test(t)) act='Internet kembali normal (autorecovery)';
-  if(!act) return null;
-  const head=(comp+' '+cond).trim();
-  const parts=[head?UP1(head):'', cause?'akibat '+cause:'', act].filter(Boolean);
+  const cl=x=>{ x=String(x||'').replace(/[\s ]+/g,' ').replace(/^[\-–\s.,;:]+|[\s.,;:]+$/g,'').trim(); if(/^(-|n\/?a|null|none|nan|tidak ada|kosong)$/i.test(x)) return ''; return x.toLowerCase().slice(0,70); };
+  let head=(comp+' '+cond).trim(); if(!head&&cl(aw)) head=cl(aw);
+  if(!cause&&cl(av)&&!/^(ont|adaptor|kabel)$/.test(cl(av))) cause=cl(av);
+  if(!act&&cl(af)) act=UP1(cl(af));
+  if(!act&&!head&&!cause) return null;
+  const parts=[head?UP1(head):'', cause?(/^(akibat|karena)\b/.test(cause)?cause:'akibat '+cause):'', act].filter(Boolean);
   return parts.join(' - ');
 }
 function classifyRca(av,aw,af){
@@ -965,9 +1006,9 @@ function loadData(showLoader,manual){
   const wd=setTimeout(()=>fail(new Error('proses terlalu lama')),90000);
   fetchCsv().then(txt=>{
     if(finished) return; LAST_FETCH=Date.now();
-    if(txt===LAST_TXT&&HAS_DATA){ clearErr(); setStatus(true); if(manual) toast('Data sudah terbaru'); done(); return; }
+    if(txt===LAST_TXT&&HAS_DATA){ clearErr(); setStatus(true); fetchMb(); if(manual) toast('Data sudah terbaru'); done(); return; }
     const res=Papa.parse(txt,{skipEmptyLines:true});
-    clearErr(); handleParsed(res.data); HAS_DATA=true; LAST_TXT=txt; setStatus(true); cacheSet(txt); if(manual) toast('Data diperbarui'); done();
+    clearErr(); handleParsed(res.data); HAS_DATA=true; LAST_TXT=txt; setStatus(true); cacheSet(txt); if(manual) toast('Data diperbarui'); done(); fetchMb();
   }).catch(fail);
 }
 
@@ -983,11 +1024,12 @@ function renderScope(){
    <div class="row2"><div><label class="l" for="scFrom">WO dibuat dari</label><input type="date" id="scFrom" value="${SCOPE.from||''}"></div><div><label class="l" for="scTo">sampai</label><input type="date" id="scTo" value="${SCOPE.to||''}"></div></div>
    ${COLMAP.kategori>=0?`<label class="l">Jenis pekerjaan</label>${kats.map((k,i)=>`<label class="kat"><input type="checkbox" class="scKat" data-k="${esc(k)}"${on(k)?' checked':''}><span>${esc(k)}</span><span class="c">${nf(SCOPE_INFO.kats[k])}</span></label>`).join('')}`:'<div class="sm">Kolom jenis pekerjaan tidak terdeteksi, filter jenis tidak dipakai.</div>'}
    ${COLMAP.tiket>=0?`<div style="margin-top:8px"><label class="l" for="scTiket">Status tiket</label><select id="scTiket"><option value="">Semua</option>${tk.map(k=>`<option value="${esc(k)}"${SCOPE.tiket===k?' selected':''}>${esc(k)} (${nf(SCOPE_INFO.tikets[k])})</option>`).join('')}</select></div>`:''}
+   <div style="margin-top:8px"><label class="l" for="scMbt">Status Tiket Metabase (untuk sinkron angka)</label><select id="scMbt"><option value="Open Ticket"${MB_TIKET==='Open Ticket'?' selected':''}>Open Ticket (sama seperti link dashboard)</option><option value=""${MB_TIKET===''?' selected':''}>Semua tiket</option></select></div>
    <div class="cnt">${esc(scopeText())}</div>
    <div class="act"><button class="btn btn-primary btn-sm" id="scApply">Terapkan</button><button class="btn btn-sm" id="scReset">Bawaan Metabase</button><button class="btn btn-sm" id="scAll">Semua data</button></div>`;
   const save=()=>{ try{ localStorage.setItem(LS_SCOPE,JSON.stringify(SCOPE)); }catch(e){} processRows(); };
-  $('scApply').onclick=()=>{ SCOPE.from=$('scFrom').value; SCOPE.to=$('scTo').value; if(COLMAP.kategori>=0){ const ck=[...document.querySelectorAll('.scKat:checked')].map(c=>c.dataset.k); SCOPE.kat=ck.length===kats.length?[]:ck; if(!ck.length) SCOPE.kat=null; } if($('scTiket')) SCOPE.tiket=$('scTiket').value; save(); toast('Cakupan diterapkan'); };
-  $('scReset').onclick=()=>{ SCOPE={from:'2026-05-01',to:'2027-01-31',kat:null,tiket:''}; save(); toast('Cakupan: bawaan Metabase'); };
+  $('scApply').onclick=()=>{ SCOPE.from=$('scFrom').value; SCOPE.to=$('scTo').value; if(COLMAP.kategori>=0){ const ck=[...document.querySelectorAll('.scKat:checked')].map(c=>c.dataset.k); SCOPE.kat=ck.length===kats.length?[]:ck; if(!ck.length) SCOPE.kat=null; } if($('scTiket')) SCOPE.tiket=$('scTiket').value; MB_TIKET=$('scMbt').value; try{ localStorage.setItem('starlite_mbt',MB_TIKET); }catch(e){} save(); fetchMb(); toast('Cakupan diterapkan'); };
+  $('scReset').onclick=()=>{ SCOPE={from:'2026-05-01',to:'2027-01-31',kat:null,tiket:''}; MB_TIKET='Open Ticket'; save(); fetchMb(); toast('Cakupan: bawaan Metabase'); };
   $('scAll').onclick=()=>{ SCOPE={from:'',to:'',kat:Object.keys(SCOPE_INFO.kats),tiket:''}; save(); toast('Cakupan: semua data'); };
 }
 $('scopeBtn').addEventListener('click',e=>{ e.stopPropagation(); const p=$('scopePop'); renderScope(); p.classList.toggle('show'); $('notifPop').classList.remove('show'); });
@@ -1001,6 +1043,82 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){ navigat
 let LAST_FETCH=Date.now();
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&Date.now()-LAST_FETCH>60000) loadData(false); });
 window.addEventListener('online',()=>loadData(false));
+
+/* ---------- Sinkron Metabase (angka aktual dari API publik dashboard) ---------- */
+const MB_BASE='https://surge-dashboard.codifytechnology.com/api/public/dashboard/158f88d7-500b-49ac-93fe-01229f052f53/dashcard/';
+const MB_CARDS={total:'642/card/496',status:'646/card/500',over:'645/card/499'};
+let MB={data:null,err:'',ts:null,busy:false}, MB_TIKET='Open Ticket';
+try{ const t=localStorage.getItem('starlite_mbt'); if(t!==null) MB_TIKET=t; }catch(e){}
+function mbParams(){
+  const f=(id,name,bt,type,val)=>({type,value:val,id,target:['dimension',['field',name,{'base-type':bt}],{'stage-number':0}]});
+  const P=[]; if(SCOPE.from||SCOPE.to) P.push(f('d3a017a2','Work Order Created At','type/DateTimeWithLocalTZ','date/range',(SCOPE.from||'2000-01-01')+'~'+(SCOPE.to||'2099-12-31')));
+  const kat=SCOPE.kat===null?['Pengecekan (Visit)','Penggantian ONT (Replace ONT)','Task Lainnya']:SCOPE.kat;
+  if(kat&&kat.length) P.push(f('f9c1a95a','Kategori Work Order','type/Text','string/=',kat));
+  if(MB_TIKET) P.push(f('f1196aea','Status Tiket','type/Text','string/=',[MB_TIKET]));
+  return encodeURIComponent(JSON.stringify(P));
+}
+async function fetchMb(){
+  if(MB.busy) return; MB.busy=true;
+  try{
+    const q='?parameters='+mbParams(), out={};
+    for(const k of Object.keys(MB_CARDS)){ const t=await fetchTimeout(MB_BASE+MB_CARDS[k]+q); const j=JSON.parse(t); if(!j||!j.data||!j.data.rows) throw new Error(j&&j.message||'respons tidak dikenal'); out[k]=j.data.rows; }
+    const st={}; (out.status||[]).forEach(r=>{ st[r[0]]=(st[r[0]]||0)+Number(r[1]||0); });
+    const tot=Number(out.total&&out.total[0]&&out.total[0][0]||0), cl=st['WO Sudah Selesai']||0, cx=st['WO Di Batalkan']||0;
+    MB.data={total:tot,close:cl,cancel:cx,open:Math.max(0,tot-cl-cx),over:Number(out.over&&out.over[0]&&out.over[0][0]||0),byStatus:st}; MB.err=''; MB.ts=new Date();
+  }catch(e){ MB.err=String(e&&e.message||e); MB.data=null; }
+  MB.busy=false; renderMb();
+}
+function renderMb(){
+  const el=$('mbStrip'); if(!el) return; if(VIEW!=='dashboard'){ el.classList.remove('show'); return; }
+  el.classList.add('show');
+  if(!MB.data){ el.innerHTML=`<h4>Sinkron Metabase</h4><div style="font-size:12.5px;color:var(--mute)">${MB.busy||!MB.err?'Mengambil angka dari Metabase…':'Angka Metabase tidak dapat diambil dari browser ini ('+esc(MB.err)+'). Dashboard memakai data Spreadsheet.'} <button class="lnk" id="mbRetry">coba lagi</button></div>`; const b=$('mbRetry'); if(b) b.onclick=fetchMb; return; }
+  const A=ALL_ROWS, d={total:A.length,close:A.filter(r=>r.st==='SELESAI').length,cancel:A.filter(r=>r.st==='CANCEL').length,over:A.filter(r=>r.sla==='OVER').length}; d.open=d.total-d.close-d.cancel;
+  const m=MB.data, it=[['total','Total WO'],['close','WO CLOSE'],['open','WO OPEN'],['cancel','WO CANCEL'],['over','Over SLA']];
+  el.innerHTML=`<h4>Sinkron Metabase <span class="b b-ok">API aktif</span><span style="text-transform:none;font-weight:500">pembaruan ${MB.ts?String(MB.ts.getHours()).padStart(2,'0')+':'+String(MB.ts.getMinutes()).padStart(2,'0'):''} · filter: ${esc(MB_TIKET||'semua tiket')}</span></h4><div class="mb-grid">${it.map(([k,l])=>{ const df=d[k]-m[k]; return `<div class="mb-c"><div class="l">${l}</div><div class="m">${nf(m[k])}</div><div class="s">Dashboard ${nf(d[k])} · <span class="d ${df===0?'ok':'bad'}">${df===0?'sama':(df>0?'+':'')+nf(df)}</span></div></div>`; }).join('')}</div>`;
+}
+/* ---------- Follow Up Mitra ---------- */
+const FU={q:'',sort:'urgent',onlyUrg:false,detUrg:false,lim:40};
+const FU_COL=['#2556D9','#0EA5E9','#7C3AED','#16A34A','#F59E0B','#EC4899','#14B8A6','#F97316'];
+(function(){ const v=document.createElement('div'); v.className='view'; v.id='v-followup'; $('v-kpi').parentNode.appendChild(v);
+  const o=document.createElement('div'); o.className='fu-ov'; o.id='fuOv'; o.innerHTML='<div class="fu-md"><h3 id="fuTitle"></h3><textarea id="fuTxt" readonly></textarea><div class="hint">Teks sudah dicoba disalin otomatis. Bila clipboard browser tidak aktif, klik area teks lalu tekan Ctrl+A kemudian Ctrl+C.</div><div class="ft"><button class="btn" id="fuClose">Tutup</button><button class="btn btn-primary" id="fuCopy">Salin ke Clipboard</button></div></div>'; document.body.appendChild(o);
+  $('fuClose').onclick=()=>o.classList.remove('show'); o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('show'); });
+  $('fuCopy').onclick=()=>copyText($('fuTxt').value,true); })();
+function copyText(t,msg){
+  const fb=()=>{ const ta=$('fuTxt'); if(ta){ ta.focus(); ta.select(); } try{ document.execCommand('copy'); if(msg) toast('Pesan disalin'); }catch(e){ if(msg) toast('Tekan Ctrl+C untuk menyalin'); } };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>{ if(msg) toast('Pesan disalin'); },fb); else fb();
+}
+function fuGroups(){
+  const g={}; ALL_ROWS.filter(isOpen).forEach(r=>{ const m=g[r.mitra]=g[r.mitra]||{name:r.mitra,rows:[],urgent:0,belum:0,reg:new Set()}; m.rows.push(r); if(r.sla==='OVER') m.urgent++; if(['BELUM','JADWAL','DISTRIB'].includes(r.st)) m.belum++; if(r.region) m.reg.add(r.region); });
+  const arr=Object.values(g); arr.forEach(m=>m.rows.sort((a,b)=>(a.stasiun||a.region||'').localeCompare(b.stasiun||b.region||'')||(b.umur||0)-(a.umur||0)||String(a.id).localeCompare(String(b.id))));
+  return arr;
+}
+function fuMsg(m){
+  const rows=FU.detUrg?m.rows.filter(r=>r.sla==='OVER'):m.rows;
+  return `🚨 *ESKALASI WO VISIT* 🚨\n\n📋 *Ringkasan* :\n*${m.name}*\n- ${nf(m.rows.length)} WO Visit Open\n- Urgent (≥ SLA) : ${nf(m.urgent)}\n\n*Detail per ID pelanggan:*\n`+rows.map(r=>`- ${r.stasiun||r.region||'-'} - ${r.cust||r.id} - ${r.nama||'-'}`).join('\n')+`\n\nMohon dibantu percepatan kunjungan/visit dan Closed WO di aplikasi IKR. Terima kasih.`;
+}
+function renderFollowUp(){
+  const root=$('v-followup'), all=fuGroups(), q=FU.q.toLowerCase();
+  let arr=all.filter(m=>(!q||m.name.toLowerCase().includes(q))&&(!FU.onlyUrg||m.urgent>0));
+  const so={urgent:(a,b)=>b.urgent-a.urgent||b.rows.length-a.rows.length||a.name.localeCompare(b.name),open:(a,b)=>b.rows.length-a.rows.length||b.urgent-a.urgent,nama:(a,b)=>a.name.localeCompare(b.name)}[FU.sort];
+  arr.sort(so);
+  const tot=all.reduce((s,m)=>s+m.rows.length,0), urg=all.reduce((s,m)=>s+m.urgent,0);
+  root.innerHTML=`<div class="fu-sum"><div class="c"><div class="l">Mitra dengan WO OPEN</div><div class="n">${nf(all.length)}</div></div><div class="c"><div class="l">Total WO OPEN</div><div class="n" style="color:var(--blue)">${nf(tot)}</div></div><div class="c"><div class="l">Urgent (Over SLA)</div><div class="n" style="color:var(--red)">${nf(urg)}</div></div><div class="c"><div class="l">Mitra urgent</div><div class="n">${nf(all.filter(m=>m.urgent>0).length)}</div></div></div>
+  <div class="fu-tools"><input type="search" id="fuQ" placeholder="Cari mitra…" value="${esc(FU.q)}"><select id="fuSort"><option value="urgent"${FU.sort==='urgent'?' selected':''}>Urut: Urgent terbanyak</option><option value="open"${FU.sort==='open'?' selected':''}>Urut: WO OPEN terbanyak</option><option value="nama"${FU.sort==='nama'?' selected':''}>Urut: Nama mitra</option></select>
+  <label class="chk"><input type="checkbox" id="fuUrg"${FU.onlyUrg?' checked':''}>Hanya mitra urgent</label><label class="chk"><input type="checkbox" id="fuDet"${FU.detUrg?' checked':''}>Pesan hanya memuat WO urgent</label></div>
+  <div class="count" style="margin-bottom:10px">${nf(arr.length)} mitra · detail diurutkan per stasiun lalu WO terlama. Klik nama mitra untuk melihat daftar WO.</div>
+  <div id="fuList">${arr.slice(0,FU.lim).map((m,i)=>`<details class="fu" data-m="${esc(m.name)}"><summary><span class="fu-av" style="background:${FU_COL[i%FU_COL.length]}">${esc(m.name.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase())}</span><span class="fu-nm"><b>${esc(m.name)}</b><small>${esc([...m.reg].slice(0,3).join(', '))}</small></span><span class="fu-st"><div><small>WO OPEN</small><b>${nf(m.rows.length)}</b></div><div><small>Urgent</small><b class="u">${nf(m.urgent)}</b></div><div><small>Belum visit</small><b>${nf(m.belum)}</b></div></span><button class="btn btn-sm btn-primary" data-copy="${esc(m.name)}">${ic('clipboard-copy')}Copy Pesan</button></summary><div class="fu-body"></div></details>`).join('')||'<div class="empty">Tidak ada mitra dengan WO OPEN.</div>'}</div>
+  ${arr.length>FU.lim?`<div style="text-align:center;margin:12px"><button class="btn" id="fuMore">Tampilkan lebih banyak (${nf(arr.length-FU.lim)} mitra)</button></div>`:''}`;
+  $('fuQ').addEventListener('input',debounce(e=>{ FU.q=e.target.value.trim(); FU.lim=40; renderFollowUp(); const f=$('fuQ'); f.focus(); f.setSelectionRange(f.value.length,f.value.length); },250));
+  $('fuSort').addEventListener('change',e=>{ FU.sort=e.target.value; renderFollowUp(); });
+  $('fuUrg').addEventListener('change',e=>{ FU.onlyUrg=e.target.checked; FU.lim=40; renderFollowUp(); });
+  $('fuDet').addEventListener('change',e=>{ FU.detUrg=e.target.checked; });
+  if($('fuMore')) $('fuMore').addEventListener('click',()=>{ FU.lim+=60; renderFollowUp(); });
+  const byName=Object.fromEntries(all.map(m=>[m.name,m]));
+  root.querySelectorAll('button[data-copy]').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); const m=byName[b.dataset.copy]; $('fuTitle').textContent='Push Eskalasi — '+m.name; $('fuTxt').value=fuMsg(m); $('fuOv').classList.add('show'); copyText($('fuTxt').value,false); }));
+  root.querySelectorAll('details.fu').forEach(d=>d.addEventListener('toggle',()=>{ if(!d.open) return; const body=d.querySelector('.fu-body'); if(body.dataset.f) return; body.dataset.f=1; const m=byName[d.dataset.m];
+    body.innerHTML=`<table><thead><tr><th>Stasiun</th><th>ID Pelanggan</th><th>Nama</th><th>Status</th><th>Umur</th><th>SLA</th></tr></thead><tbody>${m.rows.slice(0,300).map(r=>`<tr><td>${esc(r.stasiun||r.region||'-')}</td><td><button class="wo-link" data-i="${r._idx}">${esc(r.cust||r.id)}</button></td><td>${esc(r.nama||'-')}</td><td>${esc(r.statusRaw||'-')}</td><td>${r.umur!=null?nf(r.umur)+' hr':'-'}</td><td>${r.sla==='OVER'?'<span class="b b-over">Over SLA</span>':'<span class="b b-ok">Dalam SLA</span>'}</td></tr>`).join('')}</tbody></table>${m.rows.length>300?`<div class="count">Menampilkan 300 dari ${nf(m.rows.length)} WO; pesan tetap memuat semua.</div>`:''}`;
+    body.querySelectorAll('.wo-link').forEach(b=>b.addEventListener('click',()=>openDetail(+b.dataset.i))); }));
+}
 
 function startLoad(){
   /* tampilkan data cache dulu (jika ada), lalu ambil data terbaru */
@@ -1142,8 +1260,9 @@ function renderAll(){
   updateToday(); renderNotif();
   if(VIEW==='dashboard'){ renderKpi(); renderStatus(); renderRegion(); renderSla(); renderDaily(); renderMitra(); renderRca(); renderRcaExtra(); }
   else if(VIEW==='detail'){ renderDailyClose(); renderTable(); $('resultCount').textContent=`Menampilkan ${nf(FILTERED.length)} dari ${nf(ALL_ROWS.length)} WO`; }
+  else if(VIEW==='followup'){ renderFollowUp(); }
   else { renderKpiMitra(); }
-  refreshIcons();
+  renderMb(); refreshIcons();
 }
 function showView(v){
   if(!NAV.some(n=>n[0]===v)) v='dashboard'; VIEW=v;
@@ -1210,7 +1329,7 @@ function renderStatus(){
 }
 
 /* ---------- WO harian ---------- */
-let DC={range:14,date:'',page:1};
+let DC={range:14,date:'',page:1}, DAILY_RANGE=14; const HARI=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
 const barLabels={ id:'barLabels', afterDatasetsDraw(chart){
   const ctx=chart.ctx; ctx.save(); ctx.font="700 10.5px Inter, sans-serif"; ctx.textAlign='center'; ctx.textBaseline='bottom';
   chart.data.datasets.forEach((ds,di)=>{ const meta=chart.getDatasetMeta(di); if(meta.hidden) return; ctx.fillStyle=ds.backgroundColor;
@@ -1224,15 +1343,17 @@ function renderDaily(){
   const todayK=dayKey(new Date()), end=maxDay>todayK?maxDay:todayK;
   const days=[]; { const [y,m,d]=CHART_START.split('-').map(Number); let cur=new Date(y,m-1,d); const last=new Date(+end.slice(0,4),+end.slice(5,7)-1,+end.slice(8,10)); while(cur<=last&&days.length<460){ days.push(dayKey(cur)); cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()+1); } }
   const get=(k,f)=>(cnt[k]&&cnt[k][f])||0, sum=f=>days.reduce((s,k)=>s+get(k,f),0);
-  $('dailySub').textContent=(MITRA_SEL?MITRA_SEL+' · ':'')+`${fmtDate(new Date(CHART_START+'T00:00:00'))} s.d. hari ini · CLOSE ${nf(sum('c'))} · OPEN ${nf(sum('o'))} · CANCEL ${nf(sum('x'))}`;
+  const allDays=days.slice(); const sh=DAILY_RANGE>0?allDays.slice(-DAILY_RANGE):allDays; days.length=0; sh.forEach(d=>days.push(d));
+  document.querySelectorAll('#dailyRange button').forEach(b=>b.classList.toggle('on',+b.dataset.n===DAILY_RANGE));
+  $('dailySub').textContent=(MITRA_SEL?MITRA_SEL+' · ':'')+`${days.length} hari terakhir · CLOSE ${nf(sum('c'))} · OPEN ${nf(sum('o'))} · CANCEL ${nf(sum('x'))} · rata-rata CLOSE ${nf(Math.round(sum('c')/Math.max(1,days.length)))} per hari`;
   $('dailyNote').innerHTML='WO CLOSE dihitung per tanggal <b>Visit Completed Time (K)</b>. WO OPEN dan CANCEL dihitung per tanggal WO dibuat. Klik batang untuk membuka daftar WO CLOSE pada tanggal itu di menu Detail WO Visit.';
   emptyChart('dailyBox','chDaily','Belum ada data tanggal.',!days.length);
   if(!chartBase()) return; destroy('daily'); if(!days.length) return;
-  const wrap=$('dailyScroll'), width=Math.max(wrap.clientWidth-16,days.length*72);
+  const wrap=$('dailyScroll'), width=Math.max(wrap.clientWidth-16,days.length*(days.length<=14?76:days.length<=31?56:34));
   $('dailyBox').style.width=width+'px';
   const dpr=Math.min(window.devicePixelRatio||1, 30000/width);
-  charts.daily=new Chart($('chDaily'),{ type:'bar', plugins:[barLabels],
-    data:{ labels:days.map(k=>{const[y,m,dd]=k.split('-');return `${dd} ${BLN[+m-1]}`;}), datasets:[
+  charts.daily=new Chart($('chDaily'),{ type:'bar', plugins:days.length<=31?[barLabels]:[],
+    data:{ labels:days.map(k=>{const[y,m,dd]=k.split('-');return `${HARI[new Date(+y,+m-1,+dd).getDay()]} ${dd}/${m}`;}), datasets:[
       {label:'WO CLOSE',data:days.map(k=>get(k,'c')),backgroundColor:C_CLOSE,borderRadius:3},
       {label:'WO OPEN',data:days.map(k=>get(k,'o')),backgroundColor:C_OPEN,borderRadius:3},
       {label:'WO CANCEL',data:days.map(k=>get(k,'x')),backgroundColor:C_CANCEL,borderRadius:3} ] },
@@ -1241,6 +1362,9 @@ function renderDaily(){
       scales:{ x:{grid:{display:false},ticks:{maxRotation:60,autoSkip:false}}, y:{beginAtZero:true,grace:'8%',grid:{color:GRID},ticks:{precision:0}} },
       onClick:(e,els)=>{ if(els.length){ DC.date=days[els[0].index]; DC.page=1; showView('detail'); const s=$('dailyCloseSec'); if(s&&s.scrollIntoView) s.scrollIntoView({behavior:'smooth',block:'start'}); } } } });
   wrap.scrollLeft=wrap.scrollWidth;
+  const tb=days.slice().reverse().map(k=>{ const c=get(k,'c'),o=get(k,'o'),x=get(k,'x'); const d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10)); return `<tr data-d="${k}"${k===todayK?' class="sel"':''}><td class="nw">${HARI[d.getDay()]}, ${fmtDate(d)}${k===todayK?' <span class="b b-ok">Hari ini</span>':''}</td><td class="num" style="color:var(--green-ink);font-weight:700">${nf(c)}</td><td class="num" style="color:var(--blue);font-weight:700">${nf(o)}</td><td class="num" style="color:var(--red-ink);font-weight:700">${nf(x)}</td><td class="num"><b>${nf(c+o+x)}</b></td></tr>`; }).join('');
+  $('dailyTbl').innerHTML=`<table><thead><tr><th>Tanggal</th><th class="num">CLOSE</th><th class="num">OPEN</th><th class="num">CANCEL</th><th class="num">Total</th></tr></thead><tbody>${tb}</tbody></table>`;
+  $('dailyTbl').querySelectorAll('tr[data-d]').forEach(tr=>tr.addEventListener('click',()=>{ DC.date=tr.dataset.d; DC.page=1; showView('detail'); const s2=$('dailyCloseSec'); if(s2&&s2.scrollIntoView) s2.scrollIntoView({behavior:'smooth',block:'start'}); }));
 }
 function dcRows(){ return ALL_ROWS.filter(r=>r.st==='SELESAI'&&compDay(r)===DC.date).sort((a,b)=>(b.comp?+b.comp:0)-(a.comp?+a.comp:0)); }
 function renderDailyClose(){
@@ -1578,6 +1702,19 @@ function renderTable(){
 }
 
 /* ---------- Detail ---------- */
+const IMG_RE=/\.(png|jpe?g|gif|webp|bmp|heic|avif)(\?|#|$)/i;
+function rowPhotos(raw){
+  const out=[], seen=new Set(); if(!raw) return out;
+  HEADERS.forEach((h,i)=>{ const v=String(raw[i]==null?'':raw[i]); if(!v||v.indexOf('http')<0) return;
+    const hk=/foto|photo|image|img|gambar|attachment|lampiran|evidence|bukti|selfie|signature|capture/i.test(h);
+    (v.match(/https?:\/\/[^\s,;"'<>|\]\[]+/g)||[]).forEach(u=>{ if(seen.has(u)) return; if(hk||IMG_RE.test(u)||/amazonaws|googleusercontent|storage\.|cdn\.|\/uploads?\//i.test(u)){ seen.add(u); out.push({h,u}); } }); });
+  return out;
+}
+function photosHtml(r){
+  const ph=rowPhotos(RAW[r._idx]);
+  if(!ph.length) return `<div class="h4">Foto lampiran</div><div class="box"><div class="v n">Tidak ada tautan foto pada baris Spreadsheet untuk WO ini. Jika foto ada di kolom tertentu, sebutkan nama kolomnya agar dapat dipetakan.</div></div>`;
+  return `<div class="h4">Foto lampiran (${ph.length})</div><div class="photo-grid">${ph.map(x=>`<figure><a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer"><img src="${esc(x.u)}" loading="lazy" referrerpolicy="no-referrer" alt="${esc(x.h)}" onerror="this.outerHTML='<span class=&quot;ph-fail&quot;>Buka foto</span>'"></a><figcaption>${esc(x.h)}</figcaption></figure>`).join('')}</div>`;
+}
 function openDetail(i){
   const r=ALL_ROWS.find(x=>x._idx===i); if(!r) return;
   $('mId').textContent=r.id;
@@ -1606,6 +1743,7 @@ function openDetail(i){
       <div class="k" style="margin-top:10px">Kerusakan Karena (AV)</div><div class="v n">${esc(r.av)||'-'}</div>
       <div class="k" style="margin-top:10px">Tipe Damage (AW)</div><div class="v n">${esc(r.aw)||'-'}</div></div>
     <div class="box"><div class="k">${r.st==='CANCEL'?'RCA WO Dibatalkan':'RCA'} (${r.manual?'Manual':'Auto'})</div><div class="v n">${rcaTxt}</div></div>
+    ${photosHtml(r)}
     ${histHtml}
     ${editorHtml(r)}`;
   bindEditor(r);
@@ -1632,6 +1770,15 @@ function editorHtml(r){
     <div style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn btn-primary" id="ovSave">${ic('save')}Simpan</button><button class="btn" id="ovDel"${OVR[r.id]?'':' disabled'}>${ic('trash-2')}Hapus koreksi</button>${o.at?`<span class="count">Disimpan ${esc(fmtDT(new Date(o.at)))}</span>`:''}</div>
     <div class="ov-note">Koreksi disimpan di browser ini saja dan tidak menulis ke Google Sheets. Untuk membagikan ke perangkat lain, gunakan Ekspor/Impor JSON.</div></div>`;
 }
+function scrollParentOf(el){ while(el&&el!==document.body){ if(el.scrollHeight>el.clientHeight+4&&/(auto|scroll)/.test(getComputedStyle(el).overflowY)) return el; el=el.parentElement; } return null; }
+/* simpan koreksi: jendela detail tetap terbuka, posisi gulir dipertahankan, galat tidak membuat tampilan hilang */
+function keepOpen(r){
+  const sp=scrollParentOf($('mBody')), top=sp?sp.scrollTop:0;
+  try{ renderAll(); }catch(e){ console.error(e); }
+  try{ openDetail(r._idx); }catch(e){ console.error(e); $('detailOv').classList.add('show'); }
+  const sp2=scrollParentOf($('mBody')); if(sp2) sp2.scrollTop=top;
+}
+window.addEventListener('error',e=>{ try{ toast('Terjadi galat: '+(e.message||'tidak diketahui')); }catch(x){} });
 function bindEditor(r){
   $('ovSave').addEventListener('click',()=>{
     const o={ pic:$('ovPic').value.trim(), note:$('ovNote').value.trim(), at:new Date().toISOString() };
@@ -1640,9 +1787,9 @@ function bindEditor(r){
     else { o.fu=$('ovFu').value; o.cause=$('ovCause').value.trim(); }
     const empty=!(o.rca||o.av||o.aw||o.af||o.fu||o.cause||o.pic||o.note);
     if(empty) delete OVR[r.id]; else OVR[r.id]=o;
-    saveOvr(); ALL_ROWS.filter(x=>x.id===r.id).forEach(applyOvr); toast(empty?'Koreksi dihapus':'Koreksi disimpan'); renderAll(); openDetail(r._idx);
+    saveOvr(); ALL_ROWS.filter(x=>x.id===r.id).forEach(applyOvr); toast(empty?'Koreksi dihapus':'Koreksi disimpan'); keepOpen(r);
   });
-  $('ovDel').addEventListener('click',()=>{ delete OVR[r.id]; saveOvr(); ALL_ROWS.filter(x=>x.id===r.id).forEach(applyOvr); toast('Koreksi dihapus'); renderAll(); openDetail(r._idx); });
+  $('ovDel').addEventListener('click',()=>{ delete OVR[r.id]; saveOvr(); ALL_ROWS.filter(x=>x.id===r.id).forEach(applyOvr); toast('Koreksi dihapus'); keepOpen(r); });
 }
 function ovExport(){ const n=Object.keys(OVR).length; if(!n) return toast('Belum ada koreksi manual'); download(new Blob([JSON.stringify(OVR,null,1)],{type:'application/json'}),`Koreksi_Manual_WO_${stamp()}.json`); toast('Diekspor: '+n+' WO'); }
 function ovImport(file){ if(!file) return; const fr=new FileReader(); fr.onload=()=>{ try{ const j=JSON.parse(fr.result); if(!j||typeof j!=='object') throw 0; Object.assign(OVR,j); saveOvr(); ALL_ROWS.forEach(applyOvr); renderAll(); toast('Diimpor: '+Object.keys(j).length+' WO'); closeDrawer(); }catch(e){ toast('File koreksi tidak valid'); } }; fr.readAsText(file); }
@@ -1738,6 +1885,7 @@ $('dcDate').addEventListener('change',e=>{ DC.date=e.target.value; DC.page=1; re
 $('dcPrev').addEventListener('click',()=>dcShift(-1)); $('dcNext').addEventListener('click',()=>dcShift(1)); $('dcCsv').addEventListener('click',dcExport);
 $('kmSearch').addEventListener('input',debounce(e=>{ KM.q=e.target.value.trim().toLowerCase(); renderKpiMitra(); },200));
 document.querySelectorAll('#rcaKind button').forEach(b=>b.addEventListener('click',()=>{ RCA_KIND=b.dataset.k; RCA_SEL=''; renderRca(); renderRcaExtra(); refreshIcons(); }));
+document.querySelectorAll('#dailyRange button').forEach(b=>b.addEventListener('click',()=>{ DAILY_RANGE=+b.dataset.n; renderDaily(); }));
 $('rcaSort').addEventListener('change',e=>{ RCA_SORT=e.target.value; renderRca(); });
 $('rcaAllBtn').addEventListener('click',()=>{ RCA_ALL=!RCA_ALL; renderRca(); });
 ['bandMode','bandLow','bandMid'].forEach(id=>$(id).addEventListener('change',()=>{ BAND.mode=$('bandMode').value; if(BAND.mode==='manual'){ BAND.low=+$('bandLow').value||10; BAND.mid=+$('bandMid').value||25; } try{ localStorage.setItem('starlite_wo_band_v1',JSON.stringify(BAND)); }catch(e){} renderMitra(); }));
