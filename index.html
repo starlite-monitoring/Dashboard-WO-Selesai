@@ -490,6 +490,26 @@ details.fu{border:1px solid var(--line);border-radius:14px;background:var(--card
   .content{padding-left:12px;padding-right:12px;} .fu-st{width:100%;justify-content:space-between;} .fu-md textarea{height:260px;}
   .cbox.tall{min-height:260px;} table{font-size:12px;}
 }
+
+/* ---------- Revisi 10: hero & kartu ---------- */
+.hero{display:grid;grid-template-columns:1.25fr auto 1.6fr;gap:22px;align-items:center;margin-bottom:16px;padding:22px 26px;border-radius:22px;color:#fff;position:relative;overflow:hidden;
+  background:radial-gradient(900px 260px at 85% -20%,rgba(46,139,255,.55),transparent 60%),radial-gradient(500px 220px at 0% 120%,rgba(124,92,255,.35),transparent 60%),linear-gradient(120deg,#0B1F44 0%,#12306B 55%,#1D4ED8 100%);box-shadow:0 22px 44px -22px rgba(14,42,71,.7);}
+.hero::after{content:"★";position:absolute;right:-18px;top:-46px;font-size:210px;line-height:1;color:rgba(255,255,255,.05);pointer-events:none;}
+.hero-k{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9CC1FF;} .hero h2{margin:6px 0 6px;font-size:26px;font-weight:800;letter-spacing:-.4px;color:#fff;} .hero p{margin:0;font-size:13px;color:#C9D8F5;line-height:1.5;}
+.hero-ring{width:132px;height:132px;border-radius:50%;background:conic-gradient(#34D399 calc(var(--p)*1%),rgba(255,255,255,.16) 0);display:grid;place-items:center;flex:none;box-shadow:0 0 0 6px rgba(255,255,255,.06);}
+.hero-ring .rin{width:104px;height:104px;border-radius:50%;background:#0F2858;display:grid;place-content:center;text-align:center;} .hero-ring b{font-size:23px;font-weight:800;line-height:1;} .hero-ring span{font-size:10px;letter-spacing:.12em;color:#9CC1FF;font-weight:700;margin-top:4px;}
+.hero-t{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;} .ht{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:11px 12px;backdrop-filter:blur(3px);}
+.ht .hl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#B9CCF2;} .ht .hv{font-size:22px;font-weight:800;margin:3px 0 7px;font-variant-numeric:tabular-nums;} .ht .hb{height:5px;border-radius:4px;background:rgba(255,255,255,.16);overflow:hidden;} .ht .hb i{display:block;height:100%;border-radius:4px;} .ht .hp{font-size:11px;color:#B9CCF2;margin-top:5px;}
+@media(max-width:1100px){.hero{grid-template-columns:1fr auto;} .hero-t{grid-column:1/-1;}}
+@media(max-width:640px){.hero{grid-template-columns:1fr;padding:18px;gap:14px;} .hero-ring{width:108px;height:108px;} .hero-ring .rin{width:84px;height:84px;} .hero-ring b{font-size:19px;} .hero h2{font-size:20px;} .hero-t{grid-template-columns:repeat(2,1fr);}}
+.view.show{animation:vfade .35s ease both;} @keyframes vfade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.k8{animation:kup .5s ease both;} .k8:nth-child(2){animation-delay:.04s;} .k8:nth-child(3){animation-delay:.08s;} .k8:nth-child(4){animation-delay:.12s;} .k8:nth-child(5){animation-delay:.16s;} .k8:nth-child(6){animation-delay:.2s;} .k8:nth-child(7){animation-delay:.24s;} .k8:nth-child(8){animation-delay:.28s;}
+@keyframes kup{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.k8 .n{background:linear-gradient(135deg,var(--c,#2556D9),color-mix(in srgb,var(--c,#2556D9) 60%,#0B1F44));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.k8::after{content:"";position:absolute;right:-24px;bottom:-30px;width:90px;height:90px;border-radius:50%;background:color-mix(in srgb,var(--c,#2556D9) 9%,transparent);pointer-events:none;}
+.card.panel{transition:box-shadow .2s ease;} .card.panel:hover{box-shadow:0 2px 4px rgba(14,42,71,.06),0 22px 40px -18px rgba(14,42,71,.3);}
+.mb-strip{border-left:4px solid var(--blue);} .scope-pop input[type=text]{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:500 12.5px Inter,sans-serif;}
+.b-gray{background:var(--gray-soft);color:var(--gray-ink);}
 </style>
 </head>
 <body>
@@ -527,6 +547,7 @@ details.fu{border:1px solid var(--line);border-radius:14px;background:var(--card
     <main class="content">
       <div class="banner err" id="errBanner"></div>
       <div class="view show" id="v-dashboard">
+      <section class="hero" id="hero" aria-label="Ringkasan"></section>
       <section class="kpi8" id="kpiGrid" aria-label="Statistik utama"></section>
       <div class="strip" id="strip"></div>
       <div class="mb-strip" id="mbStrip"></div>
@@ -766,6 +787,7 @@ function parseDate(v){
 function parseDT(v){
   v=String(v||'').trim(); if(!v) return null;
   if(/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(v)){ const d=new Date(v.replace(' ','T')); if(!isNaN(d.getTime())) return d; }
+  if(/^[A-Za-z]{3,9}\s+\d{1,2},\s*\d{4}/.test(v)){ const x=new Date(v); if(!isNaN(x.getTime())) return x; }
   const d=parseDate(v); if(!d) return null;
   const m=v.match(/[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?/); if(!m) return d;
   return new Date(d.getFullYear(),d.getMonth(),d.getDate(),+m[1],+m[2],+(m[3]||0));
@@ -965,7 +987,9 @@ function setStatus(ok){
 }
 function showErr(m){ const e=$('errBanner'); e.textContent=m; e.classList.add('show'); }
 function clearErr(){ $('errBanner').classList.remove('show'); }
-const CSV_URLS=[CSV_URL, CSV_URL+'&_=__T__', "https://docs.google.com/spreadsheets/d/1Ki9oR-ODT7unF35LXDKR5fRFKxWSe87ckTVZLyzMz9M/gviz/tq?tqx=out:csv&gid=585283091"];
+let CSV_OVR=''; try{ CSV_OVR=''; localStorage.removeItem('starlite_csv'); }catch(e){}
+function csvUrls(){ const L=[]; if(CSV_OVR){ L.push(CSV_OVR, CSV_OVR+(CSV_OVR.includes('?')?'&':'?')+'_=__T__'); } return L.concat(CSV_URLS_BASE); }
+const CSV_URLS_BASE=[CSV_URL, CSV_URL+'&_=__T__', "https://docs.google.com/spreadsheets/d/1Ki9oR-ODT7unF35LXDKR5fRFKxWSe87ckTVZLyzMz9M/gviz/tq?tqx=out:csv&gid=585283091"];
 const FETCH_TIMEOUT=12000;
 function fetchTimeout(u){
   return new Promise((ok,no)=>{
@@ -977,7 +1001,7 @@ function fetchTimeout(u){
 }
 async function fetchCsv(){
   let lastErr=null;
-  for(const u0 of CSV_URLS){
+  for(const u0 of csvUrls()){
     const u=u0.replace('__T__',Date.now());
     try{ const t=await fetchTimeout(u);
       if(/^\s*<(!doctype|html)/i.test(t)) throw new Error('Respons bukan CSV (sheet tidak publik?)'); return t; }catch(e){ lastErr=e; }
@@ -1025,10 +1049,12 @@ function renderScope(){
    ${COLMAP.kategori>=0?`<label class="l">Jenis pekerjaan</label>${kats.map((k,i)=>`<label class="kat"><input type="checkbox" class="scKat" data-k="${esc(k)}"${on(k)?' checked':''}><span>${esc(k)}</span><span class="c">${nf(SCOPE_INFO.kats[k])}</span></label>`).join('')}`:'<div class="sm">Kolom jenis pekerjaan tidak terdeteksi, filter jenis tidak dipakai.</div>'}
    ${COLMAP.tiket>=0?`<div style="margin-top:8px"><label class="l" for="scTiket">Status tiket</label><select id="scTiket"><option value="">Semua</option>${tk.map(k=>`<option value="${esc(k)}"${SCOPE.tiket===k?' selected':''}>${esc(k)} (${nf(SCOPE_INFO.tikets[k])})</option>`).join('')}</select></div>`:''}
    <div style="margin-top:8px"><label class="l" for="scMbt">Status Tiket Metabase (untuk sinkron angka)</label><select id="scMbt"><option value="Open Ticket"${MB_TIKET==='Open Ticket'?' selected':''}>Open Ticket (sama seperti link dashboard)</option><option value=""${MB_TIKET===''?' selected':''}>Semua tiket</option></select></div>
+   <div style="margin-top:8px"><label class="l" for="scPx">URL Apps Script proxy Metabase</label><input type="text" id="scPx" value="${esc(MB_PROXY)}" placeholder="https://script.google.com/macros/s/…/exec"></div>
+   <div style="margin-top:8px"><label class="l" for="scCsv">URL CSV sumber data (Sheet "WO VISIT" hasil sinkron)</label><input type="text" id="scCsv" value="${esc(CSV_OVR)}" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?output=csv"></div>
    <div class="cnt">${esc(scopeText())}</div>
    <div class="act"><button class="btn btn-primary btn-sm" id="scApply">Terapkan</button><button class="btn btn-sm" id="scReset">Bawaan Metabase</button><button class="btn btn-sm" id="scAll">Semua data</button></div>`;
   const save=()=>{ try{ localStorage.setItem(LS_SCOPE,JSON.stringify(SCOPE)); }catch(e){} processRows(); };
-  $('scApply').onclick=()=>{ SCOPE.from=$('scFrom').value; SCOPE.to=$('scTo').value; if(COLMAP.kategori>=0){ const ck=[...document.querySelectorAll('.scKat:checked')].map(c=>c.dataset.k); SCOPE.kat=ck.length===kats.length?[]:ck; if(!ck.length) SCOPE.kat=null; } if($('scTiket')) SCOPE.tiket=$('scTiket').value; MB_TIKET=$('scMbt').value; try{ localStorage.setItem('starlite_mbt',MB_TIKET); }catch(e){} save(); fetchMb(); toast('Cakupan diterapkan'); };
+  $('scApply').onclick=()=>{ SCOPE.from=$('scFrom').value; SCOPE.to=$('scTo').value; if(COLMAP.kategori>=0){ const ck=[...document.querySelectorAll('.scKat:checked')].map(c=>c.dataset.k); SCOPE.kat=ck.length===kats.length?[]:ck; if(!ck.length) SCOPE.kat=null; } if($('scTiket')) SCOPE.tiket=$('scTiket').value; MB_TIKET=$('scMbt').value; MB_PROXY=$('scPx').value.trim(); const nc=$('scCsv').value.trim(); if(nc!==CSV_OVR){ CSV_OVR=nc; try{ localStorage.setItem('starlite_csv',nc); }catch(e){} LAST_TXT=''; setTimeout(()=>loadData(true,true),50); } try{ localStorage.setItem('starlite_mbt',MB_TIKET); localStorage.setItem('starlite_mbproxy',MB_PROXY); }catch(e){} save(); fetchMb(); toast('Cakupan diterapkan'); };
   $('scReset').onclick=()=>{ SCOPE={from:'2026-05-01',to:'2027-01-31',kat:null,tiket:''}; MB_TIKET='Open Ticket'; save(); fetchMb(); toast('Cakupan: bawaan Metabase'); };
   $('scAll').onclick=()=>{ SCOPE={from:'',to:'',kat:Object.keys(SCOPE_INFO.kats),tiket:''}; save(); toast('Cakupan: semua data'); };
 }
@@ -1047,37 +1073,56 @@ window.addEventListener('online',()=>loadData(false));
 /* ---------- Sinkron Metabase (angka aktual dari API publik dashboard) ---------- */
 const MB_BASE='https://surge-dashboard.codifytechnology.com/api/public/dashboard/158f88d7-500b-49ac-93fe-01229f052f53/dashcard/';
 const MB_CARDS={total:'642/card/496',status:'646/card/500',over:'645/card/499'};
-let MB={data:null,err:'',ts:null,busy:false}, MB_TIKET='Open Ticket';
-try{ const t=localStorage.getItem('starlite_mbt'); if(t!==null) MB_TIKET=t; }catch(e){}
+const MB_PROXY_DEFAULT='https://script.google.com/macros/s/AKfycbyBYmFbRjWTFmwts83bl8wMtY8Gk0LOIp64oBn3c_m71MhwIH05nLqBK4LAdv8O1nGU/exec';
+let MB={data:null,err:'',ts:null,busy:false}, MB_TIKET='Open Ticket', MB_PROXY='', USE_MB=true;
+try{ const t=localStorage.getItem('starlite_mbt'); if(t!==null) MB_TIKET=t; MB_PROXY=MB_PROXY_DEFAULT; if(localStorage.getItem('starlite_mbproxy')&&localStorage.getItem('starlite_mbproxy')!==MB_PROXY_DEFAULT&&!/AKfycbyWSGN/.test(localStorage.getItem('starlite_mbproxy'))) MB_PROXY=localStorage.getItem('starlite_mbproxy'); const u=localStorage.getItem('starlite_usemb'); if(u!==null) USE_MB=u==='1'; }catch(e){}
+function mbKat(){ return SCOPE.kat===null?['Pengecekan (Visit)','Penggantian ONT (Replace ONT)','Task Lainnya']:SCOPE.kat; }
 function mbParams(){
   const f=(id,name,bt,type,val)=>({type,value:val,id,target:['dimension',['field',name,{'base-type':bt}],{'stage-number':0}]});
   const P=[]; if(SCOPE.from||SCOPE.to) P.push(f('d3a017a2','Work Order Created At','type/DateTimeWithLocalTZ','date/range',(SCOPE.from||'2000-01-01')+'~'+(SCOPE.to||'2099-12-31')));
-  const kat=SCOPE.kat===null?['Pengecekan (Visit)','Penggantian ONT (Replace ONT)','Task Lainnya']:SCOPE.kat;
-  if(kat&&kat.length) P.push(f('f9c1a95a','Kategori Work Order','type/Text','string/=',kat));
+  const kat=mbKat(); if(kat&&kat.length) P.push(f('f9c1a95a','Kategori Work Order','type/Text','string/=',kat));
   if(MB_TIKET) P.push(f('f1196aea','Status Tiket','type/Text','string/=',[MB_TIKET]));
   return encodeURIComponent(JSON.stringify(P));
 }
-async function fetchMb(){
-  if(MB.busy) return; MB.busy=true;
-  try{
-    const q='?parameters='+mbParams(), out={};
-    for(const k of Object.keys(MB_CARDS)){ const t=await fetchTimeout(MB_BASE+MB_CARDS[k]+q); const j=JSON.parse(t); if(!j||!j.data||!j.data.rows) throw new Error(j&&j.message||'respons tidak dikenal'); out[k]=j.data.rows; }
-    const st={}; (out.status||[]).forEach(r=>{ st[r[0]]=(st[r[0]]||0)+Number(r[1]||0); });
-    const tot=Number(out.total&&out.total[0]&&out.total[0][0]||0), cl=st['WO Sudah Selesai']||0, cx=st['WO Di Batalkan']||0;
-    MB.data={total:tot,close:cl,cancel:cx,open:Math.max(0,tot-cl-cx),over:Number(out.over&&out.over[0]&&out.over[0][0]||0),byStatus:st}; MB.err=''; MB.ts=new Date();
-  }catch(e){ MB.err=String(e&&e.message||e); MB.data=null; }
-  MB.busy=false; renderMb();
+function mbShape(out){
+  const st={}; (out.status||[]).forEach(r=>{ st[r[0]]=(st[r[0]]||0)+Number(r[1]||0); });
+  const tot=Number(out.total&&out.total[0]&&out.total[0][0]||0), cl=st['WO Sudah Selesai']||0, cx=st['WO Di Batalkan']||0;
+  return {total:tot,close:cl,cancel:cx,open:Math.max(0,tot-cl-cx),over:Number(out.over&&out.over[0]&&out.over[0][0]||0),byStatus:st};
 }
+async function fetchMb(){
+  if(MB.busy) return; MB.busy=true; renderMb();
+  try{
+    let out;
+    if(MB_PROXY){
+      const q='?from='+encodeURIComponent(SCOPE.from||'')+'&to='+encodeURIComponent(SCOPE.to||'')+'&kat='+encodeURIComponent(mbKat().join('|'))+'&tiket='+encodeURIComponent(MB_TIKET||'')+'&_='+Date.now();
+      const j=JSON.parse(await fetchTimeout(MB_PROXY+q)); if(!j||j.ok===false) throw new Error(j&&j.error||'proxy gagal'); out=j.cards;
+    } else {
+      out={}; const q='?parameters='+mbParams();
+      for(const k of Object.keys(MB_CARDS)){ const j=JSON.parse(await fetchTimeout(MB_BASE+MB_CARDS[k]+q)); if(!j||!j.data||!j.data.rows) throw new Error('respons tidak dikenal'); out[k]=j.data.rows; }
+    }
+    MB.data=mbShape(out); MB.err=''; MB.ts=new Date();
+  }catch(e){ MB.err=String(e&&e.message||e); if(!MB.data||!MB.ts||Date.now()-MB.ts>30*60000) MB.data=null; }
+  MB.busy=false; renderMb();
+  if(VIEW==='dashboard'){ try{ renderKpi(); renderStatus(); renderHero(); refreshIcons(); }catch(e){ console.error(e); } }
+}
+const mbUse=()=>(USE_MB&&MB.data&&!MITRA_SEL)?MB.data:null;
 function renderMb(){
   const el=$('mbStrip'); if(!el) return; if(VIEW!=='dashboard'){ el.classList.remove('show'); return; }
   el.classList.add('show');
-  if(!MB.data){ el.innerHTML=`<h4>Sinkron Metabase</h4><div style="font-size:12.5px;color:var(--mute)">${MB.busy||!MB.err?'Mengambil angka dari Metabase…':'Angka Metabase tidak dapat diambil dari browser ini ('+esc(MB.err)+'). Dashboard memakai data Spreadsheet.'} <button class="lnk" id="mbRetry">coba lagi</button></div>`; const b=$('mbRetry'); if(b) b.onclick=fetchMb; return; }
+  if(!MB.data){
+    el.innerHTML=`<h4>Sinkron Metabase <span class="b b-gray">belum tersambung</span></h4><div style="font-size:12.5px;color:var(--mute);line-height:1.5">${MB.busy?'Mengambil angka dari Metabase…':(MB_PROXY?'Proxy tidak merespons ('+esc(MB.err)+'). ':'Browser memblokir akses langsung ke Metabase (CORS). ')+'Hubungkan lewat <b>Apps Script proxy</b>: ikon filter di kanan atas, kolom "URL Apps Script proxy". Sampai tersambung, angka memakai Spreadsheet.'} <button class="lnk" id="mbRetry">coba lagi</button></div>`; const b=$('mbRetry'); if(b) b.onclick=fetchMb; return; }
   const A=ALL_ROWS, d={total:A.length,close:A.filter(r=>r.st==='SELESAI').length,cancel:A.filter(r=>r.st==='CANCEL').length,over:A.filter(r=>r.sla==='OVER').length}; d.open=d.total-d.close-d.cancel;
   const m=MB.data, it=[['total','Total WO'],['close','WO CLOSE'],['open','WO OPEN'],['cancel','WO CANCEL'],['over','Over SLA']];
-  el.innerHTML=`<h4>Sinkron Metabase <span class="b b-ok">API aktif</span><span style="text-transform:none;font-weight:500">pembaruan ${MB.ts?String(MB.ts.getHours()).padStart(2,'0')+':'+String(MB.ts.getMinutes()).padStart(2,'0'):''} · filter: ${esc(MB_TIKET||'semua tiket')}</span></h4><div class="mb-grid">${it.map(([k,l])=>{ const df=d[k]-m[k]; return `<div class="mb-c"><div class="l">${l}</div><div class="m">${nf(m[k])}</div><div class="s">Dashboard ${nf(d[k])} · <span class="d ${df===0?'ok':'bad'}">${df===0?'sama':(df>0?'+':'')+nf(df)}</span></div></div>`; }).join('')}</div>`;
+  const sc={}; A.forEach(r=>{ const k=r.statusRaw||'(kosong)'; sc[k]=(sc[k]||0)+1; });
+  const keys=[...new Set([...Object.keys(m.byStatus),...Object.keys(sc)])].sort((x,y)=>(m.byStatus[y]||0)-(m.byStatus[x]||0));
+  el.innerHTML=`<h4>Sinkron Metabase <span class="b b-ok">API aktif</span><span style="text-transform:none;font-weight:500">pembaruan ${MB.ts?String(MB.ts.getHours()).padStart(2,'0')+':'+String(MB.ts.getMinutes()).padStart(2,'0'):''} · tiket: ${esc(MB_TIKET||'semua')}</span><label class="chk" style="margin-left:auto;text-transform:none;font-weight:600"><input type="checkbox" id="mbUse"${USE_MB?' checked':''}> Samakan angka KPI dengan Metabase</label></h4>
+   <div class="mb-grid">${it.map(([k,l])=>{ const df=d[k]-m[k]; return `<div class="mb-c"><div class="l">${l}</div><div class="m">${nf(m[k])}</div><div class="s">Spreadsheet ${nf(d[k])} · <span class="d ${df===0?'ok':'bad'}">${df===0?'sama':(df>0?'+':'')+nf(df)}</span></div></div>`; }).join('')}</div>
+   <details style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:600;color:var(--blue)">Rincian selisih per status (kolom D)</summary><div class="rtable-wrap" style="margin-top:8px"><table><thead><tr><th>Status</th><th class="num">Metabase</th><th class="num">Spreadsheet</th><th class="num">Selisih</th></tr></thead><tbody>${keys.map(k=>{ const a=m.byStatus[k]||0,b=sc[k]||0; return `<tr><td>${esc(k)}</td><td class="num">${nf(a)}</td><td class="num">${nf(b)}</td><td class="num" style="font-weight:700;color:${a===b?'var(--green-ink)':'var(--red-ink)'}">${a===b?'0':(b-a>0?'+':'')+nf(b-a)}</td></tr>`; }).join('')}</tbody></table></div></details>`;
+  const u=$('mbUse'); if(u) u.onchange=()=>{ USE_MB=u.checked; try{ localStorage.setItem('starlite_usemb',USE_MB?'1':'0'); }catch(e){} renderKpi(); renderStatus(); renderHero(); refreshIcons(); };
 }
+setInterval(()=>{ if(!document.hidden) fetchMb(); },5*60*1000);
 /* ---------- Follow Up Mitra ---------- */
-const FU={q:'',sort:'urgent',onlyUrg:false,detUrg:false,lim:40};
+const FU={q:'',sort:'open',onlyUrg:false,detUrg:false,lim:40};
 const FU_COL=['#2556D9','#0EA5E9','#7C3AED','#16A34A','#F59E0B','#EC4899','#14B8A6','#F97316'];
 (function(){ const v=document.createElement('div'); v.className='view'; v.id='v-followup'; $('v-kpi').parentNode.appendChild(v);
   const o=document.createElement('div'); o.className='fu-ov'; o.id='fuOv'; o.innerHTML='<div class="fu-md"><h3 id="fuTitle"></h3><textarea id="fuTxt" readonly></textarea><div class="hint">Teks sudah dicoba disalin otomatis. Bila clipboard browser tidak aktif, klik area teks lalu tekan Ctrl+A kemudian Ctrl+C.</div><div class="ft"><button class="btn" id="fuClose">Tutup</button><button class="btn btn-primary" id="fuCopy">Salin ke Clipboard</button></div></div>'; document.body.appendChild(o);
@@ -1099,11 +1144,11 @@ function fuMsg(m){
 function renderFollowUp(){
   const root=$('v-followup'), all=fuGroups(), q=FU.q.toLowerCase();
   let arr=all.filter(m=>(!q||m.name.toLowerCase().includes(q))&&(!FU.onlyUrg||m.urgent>0));
-  const so={urgent:(a,b)=>b.urgent-a.urgent||b.rows.length-a.rows.length||a.name.localeCompare(b.name),open:(a,b)=>b.rows.length-a.rows.length||b.urgent-a.urgent,nama:(a,b)=>a.name.localeCompare(b.name)}[FU.sort];
+  const so={urgent:(a,b)=>b.urgent-a.urgent||b.rows.length-a.rows.length||a.name.localeCompare(b.name),open:(a,b)=>b.rows.length-a.rows.length||b.urgent-a.urgent||a.name.localeCompare(b.name),nama:(a,b)=>a.name.localeCompare(b.name)}[FU.sort];
   arr.sort(so);
   const tot=all.reduce((s,m)=>s+m.rows.length,0), urg=all.reduce((s,m)=>s+m.urgent,0);
   root.innerHTML=`<div class="fu-sum"><div class="c"><div class="l">Mitra dengan WO OPEN</div><div class="n">${nf(all.length)}</div></div><div class="c"><div class="l">Total WO OPEN</div><div class="n" style="color:var(--blue)">${nf(tot)}</div></div><div class="c"><div class="l">Urgent (Over SLA)</div><div class="n" style="color:var(--red)">${nf(urg)}</div></div><div class="c"><div class="l">Mitra urgent</div><div class="n">${nf(all.filter(m=>m.urgent>0).length)}</div></div></div>
-  <div class="fu-tools"><input type="search" id="fuQ" placeholder="Cari mitra…" value="${esc(FU.q)}"><select id="fuSort"><option value="urgent"${FU.sort==='urgent'?' selected':''}>Urut: Urgent terbanyak</option><option value="open"${FU.sort==='open'?' selected':''}>Urut: WO OPEN terbanyak</option><option value="nama"${FU.sort==='nama'?' selected':''}>Urut: Nama mitra</option></select>
+  <div class="fu-tools"><input type="search" id="fuQ" placeholder="Cari mitra…" value="${esc(FU.q)}"><select id="fuSort"><option value="open"${FU.sort==='open'?' selected':''}>Urut: WO OPEN terbanyak</option><option value="urgent"${FU.sort==='urgent'?' selected':''}>Urut: Urgent terbanyak</option><option value="nama"${FU.sort==='nama'?' selected':''}>Urut: Nama mitra</option></select>
   <label class="chk"><input type="checkbox" id="fuUrg"${FU.onlyUrg?' checked':''}>Hanya mitra urgent</label><label class="chk"><input type="checkbox" id="fuDet"${FU.detUrg?' checked':''}>Pesan hanya memuat WO urgent</label></div>
   <div class="count" style="margin-bottom:10px">${nf(arr.length)} mitra · detail diurutkan per stasiun lalu WO terlama. Klik nama mitra untuk melihat daftar WO.</div>
   <div id="fuList">${arr.slice(0,FU.lim).map((m,i)=>`<details class="fu" data-m="${esc(m.name)}"><summary><span class="fu-av" style="background:${FU_COL[i%FU_COL.length]}">${esc(m.name.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase())}</span><span class="fu-nm"><b>${esc(m.name)}</b><small>${esc([...m.reg].slice(0,3).join(', '))}</small></span><span class="fu-st"><div><small>WO OPEN</small><b>${nf(m.rows.length)}</b></div><div><small>Urgent</small><b class="u">${nf(m.urgent)}</b></div><div><small>Belum visit</small><b>${nf(m.belum)}</b></div></span><button class="btn btn-sm btn-primary" data-copy="${esc(m.name)}">${ic('clipboard-copy')}Copy Pesan</button></summary><div class="fu-body"></div></details>`).join('')||'<div class="empty">Tidak ada mitra dengan WO OPEN.</div>'}</div>
@@ -1118,6 +1163,19 @@ function renderFollowUp(){
   root.querySelectorAll('details.fu').forEach(d=>d.addEventListener('toggle',()=>{ if(!d.open) return; const body=d.querySelector('.fu-body'); if(body.dataset.f) return; body.dataset.f=1; const m=byName[d.dataset.m];
     body.innerHTML=`<table><thead><tr><th>Stasiun</th><th>ID Pelanggan</th><th>Nama</th><th>Status</th><th>Umur</th><th>SLA</th></tr></thead><tbody>${m.rows.slice(0,300).map(r=>`<tr><td>${esc(r.stasiun||r.region||'-')}</td><td><button class="wo-link" data-i="${r._idx}">${esc(r.cust||r.id)}</button></td><td>${esc(r.nama||'-')}</td><td>${esc(r.statusRaw||'-')}</td><td>${r.umur!=null?nf(r.umur)+' hr':'-'}</td><td>${r.sla==='OVER'?'<span class="b b-over">Over SLA</span>':'<span class="b b-ok">Dalam SLA</span>'}</td></tr>`).join('')}</tbody></table>${m.rows.length>300?`<div class="count">Menampilkan 300 dari ${nf(m.rows.length)} WO; pesan tetap memuat semua.</div>`:''}`;
     body.querySelectorAll('.wo-link').forEach(b=>b.addEventListener('click',()=>openDetail(+b.dataset.i))); }));
+}
+
+function renderHero(){
+  const el=$('hero'); if(!el||VIEW!=='dashboard') return;
+  const base=dRows(), M=mbUse(); let tot=base.length, close=base.filter(r=>r.st==='SELESAI').length, cancel=base.filter(r=>r.st==='CANCEL').length, open=tot-close-cancel, ov=base.filter(r=>r.sla==='OVER').length;
+  if(M){ tot=M.total; close=M.close; cancel=M.cancel; open=M.open; ov=M.over; }
+  const cr=tot?close/tot*100:0, tk=dayKey(new Date()), todayN=ALL_ROWS.filter(r=>r.st==='SELESAI'&&compDay(r)===tk).length;
+  const urgM=new Set(ALL_ROWS.filter(r=>isOpen(r)&&r.sla==='OVER').map(r=>r.mitra)).size;
+  const tile=(l,v,c,pc)=>`<div class="ht"><div class="hl">${l}</div><div class="hv">${nf(v)}</div><div class="hb"><i style="width:${Math.min(100,pc).toFixed(1)}%;background:${c}"></i></div><div class="hp">${pc.toFixed(1).replace('.',',')}%</div></div>`;
+  const h=new Date().getHours(), sal=h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam';
+  el.innerHTML=`<div class="hero-l"><div class="hero-k">${sal}</div><h2>Ringkasan WO Visit${MITRA_SEL?' — '+esc(MITRA_SEL):''}</h2><p>${nf(tot)} WO${M?' (Metabase)':''} · ${nf(todayN)} WO CLOSE hari ini · ${nf(urgM)} mitra memiliki WO OPEN Over SLA</p></div>
+   <div class="hero-ring" style="--p:${cr.toFixed(1)}"><div class="rin"><b>${cr.toFixed(1).replace('.',',')}%</b><span>WO CLOSE</span></div></div>
+   <div class="hero-t">${tile('WO CLOSE',close,'#34D399',tot?close/tot*100:0)}${tile('WO OPEN',open,'#60A5FA',tot?open/tot*100:0)}${tile('WO CANCEL',cancel,'#F87171',tot?cancel/tot*100:0)}${tile('Over SLA',ov,'#FBBF24',tot?ov/tot*100:0)}</div>`;
 }
 
 function startLoad(){
@@ -1258,11 +1316,11 @@ function renderNotif(){
 function updateToday(){ const k=dayKey(new Date()); const n=ALL_ROWS.filter(r=>r.st==='SELESAI'&&compDay(r)===k).length; $('todayClose').textContent=nf(n); $('todayChip').title='WO CLOSE (tanggal WO Completed) hari ini: '+fmtDate(new Date()); }
 function renderAll(){
   updateToday(); renderNotif();
-  if(VIEW==='dashboard'){ renderKpi(); renderStatus(); renderRegion(); renderSla(); renderDaily(); renderMitra(); renderRca(); renderRcaExtra(); }
+  if(VIEW==='dashboard'){ renderHero(); renderKpi(); renderStatus(); renderRegion(); renderSla(); renderDaily(); renderMitra(); renderRca(); renderRcaExtra(); }
   else if(VIEW==='detail'){ renderDailyClose(); renderTable(); $('resultCount').textContent=`Menampilkan ${nf(FILTERED.length)} dari ${nf(ALL_ROWS.length)} WO`; }
   else if(VIEW==='followup'){ renderFollowUp(); }
   else { renderKpiMitra(); }
-  renderMb(); refreshIcons();
+  renderMb(); renderHero(); refreshIcons();
 }
 function showView(v){
   if(!NAV.some(n=>n[0]===v)) v='dashboard'; VIEW=v;
@@ -1280,9 +1338,10 @@ const isOpen = r => !['SELESAI','CANCEL'].includes(r.st);
 function toTable(patch){ F=Object.assign({},F0,patch); page=1; showView('detail'); buildFilters(); applyFilters(); const e=$('detailSec'); if(e&&e.scrollIntoView) e.scrollIntoView({behavior:'smooth',block:'start'}); }
 const goTo = id => { if(id==='tableSec'||id==='dailyCloseSec'||id==='detailSec'){ if(VIEW!=='detail') showView('detail'); id=id==='tableSec'?'detailSec':id; } const e=$(id); if(e&&e.scrollIntoView) e.scrollIntoView({behavior:'smooth',block:'start'}); };
 function renderKpi(){
-  const base=dRows(), tot=base.length;
+  const base=dRows(); let tot=base.length; const M=mbUse();
   const mitraN=new Set(base.filter(r=>r.mitra!=='(Tanpa Mitra)').map(r=>r.mitra)).size;
-  const close=base.filter(r=>r.st==='SELESAI').length, cancel=base.filter(r=>r.st==='CANCEL').length, open=tot-close-cancel;
+  let close=base.filter(r=>r.st==='SELESAI').length, cancel=base.filter(r=>r.st==='CANCEL').length, open=tot-close-cancel;
+  if(M){ tot=M.total; close=M.close; cancel=M.cancel; open=M.open; }
   const over=base.filter(r=>r.sla==='OVER'), ok=base.filter(r=>r.sla==='OK').length;
   const oo=over.filter(isOpen).length, oc=over.filter(r=>r.st==='SELESAI').length, ox=over.length-oo-oc;
   const durs=base.filter(r=>r.st==='SELESAI'&&r.dur!=null).map(r=>r.dur), avg=durs.length?durs.reduce((x,y)=>x+y,0)/durs.length:null;
@@ -1290,11 +1349,11 @@ function renderKpi(){
   const card=(key,label,val,sub,cls,link)=>`<button class="k8 ${cls}" data-k="${key}"><span class="top"><span class="l">${label}</span><span class="ico">${ic(KI[key])}</span></span><span class="n">${val}</span><span class="s">${sub}</span><span class="go">${link?'Lihat detail →':'&nbsp;'}</span></button>`;
   $('kpiGrid').innerHTML=
     card('MITRA','Jumlah Mitra',nf(mitraN),'Mitra unik','c-blue',true)+
-    card('ALL','Total WO',nf(tot),'WO unik','',true)+
+    card('ALL','Total WO',nf(tot),M?'Sumber: Metabase':'WO unik','',true)+
     card('CLOSE','WO CLOSE',nf(close),pct(close,tot)+' dari total WO','c-green',true)+
     card('OPEN','WO OPEN',nf(open),pct(open,tot)+' dari total · belum selesai','c-red',true)+
     card('CANCEL','WO CANCEL',nf(cancel),pct(cancel,tot)+' dari total WO','c-gray',true)+
-    card('OVER','WO OVER SLA',nf(over.length),'Indikator SLA · OPEN '+nf(oo)+' · CLOSE '+nf(oc)+(ox?' · Cancel '+nf(ox):''),'c-orange',true)+
+    card('OVER','WO OVER SLA',nf(M?M.over:over.length),'Indikator SLA · OPEN '+nf(oo)+' · CLOSE '+nf(oc)+(ox?' · Cancel '+nf(ox):''),'c-orange',true)+
     card('SLA','WO SLA',nf(ok),'WO dalam SLA (kolom H)','c-blue',true)+
     card('AVG','Average SLA',avg==null?'–':avg.toFixed(1).replace('.',',')+' jam',avg==null?'Kolom A / K belum terbaca':'Visit Completed (K) − WO Created (A) · '+nf(durs.length)+' WO CLOSE','c-blue',false);
   $('kpiGrid').querySelectorAll('.k8').forEach(b=>b.addEventListener('click',()=>{
@@ -1302,7 +1361,7 @@ function renderKpi(){
     if(k==='MITRA'){ goTo('mitraSec'); return; } if(k==='AVG'){ showView('detail'); return; }
     toTable(k==='ALL'?{}:k==='OVER'?{sla:'OVER'}:k==='SLA'?{sla:'OK'}:{status:k});
   }));
-  $('strip').innerHTML='<span><b>Cakupan:</b> '+esc(scopeText())+'. Klik kartu atau grafik untuk membuka daftar WO. Over SLA adalah indikator, bukan status. Ubah cakupan lewat ikon filter di kanan atas.</span>';
+  $('strip').innerHTML='<span><b>Cakupan:</b> '+esc(scopeText())+(M?' · <b>Angka KPI dari Metabase</b>':'')+'. Klik kartu atau grafik untuk membuka daftar WO. Over SLA adalah indikator, bukan status. Ubah cakupan lewat ikon filter di kanan atas.</span>';
 }
 function destroy(k){ if(charts[k]){ charts[k].destroy(); charts[k]=null; } }
 function chartBase(){ if(typeof Chart==='undefined') return false; Chart.defaults.font.family="'Inter',system-ui,sans-serif"; Chart.defaults.font.size=11; Chart.defaults.color=isDark()?'#9FB0CC':'#64748B'; Chart.defaults.borderColor=isDark()?'#223250':'#E3E9F3'; GRID=isDark()?'#1E2D49':'#EEF2F8'; return true; }
@@ -1312,8 +1371,9 @@ function emptyChart(boxId,canvasId,msg,empty){
   else { if(e) e.remove(); $(canvasId).classList.remove('hidden'); }
 }
 function renderStatus(){
-  const base=dRows(), tot=base.length;
+  const base=dRows(); let tot=base.length; const M=mbUse();
   const n={CLOSE:base.filter(r=>r.st==='SELESAI').length, CANCEL:base.filter(r=>r.st==='CANCEL').length}; n.OPEN=tot-n.CLOSE-n.CANCEL;
+  if(M){ tot=M.total; n.CLOSE=M.close; n.CANCEL=M.cancel; n.OPEN=M.open; }
   const items=[['OPEN','WO OPEN',C_OPEN],['CLOSE','WO CLOSE',C_CLOSE],['CANCEL','WO CANCEL',C_CANCEL]];
   $('legend').innerHTML=tot?items.map(([k,l,c])=>`<button class="lg" data-k="${k}"><i style="background:${c}"></i><span>${l}</span><span class="n">${nf(n[k])}</span><span class="p">${pct(n[k],tot)}</span></button>`).join(''):'';
   $('legend').querySelectorAll('.lg').forEach(b=>b.addEventListener('click',()=>toTable({status:b.dataset.k})));
