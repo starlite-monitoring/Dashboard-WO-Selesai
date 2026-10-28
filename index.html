@@ -39,7 +39,7 @@ License: MIT
   --bg:#F4F7FC; --card:#FFFFFF; --line:#E3E9F3; --line-2:#EEF2F8;
   --ink:#0F1B33; --ink-2:#334155; --mute:#64748B;
   --blue:#2556D9; --blue-hover:#1E47B8; --blue-soft:#E8EEFD; --navy:#10265E;
-  --green:#16A34A; --green-ink:#166534; --green-soft:#DCFCE7;
+  --green:#2FB584; --green-ink:#14785A; --green-soft:#DDF5EC;
   --orange:#F59E0B; --orange-ink:#9A4A06; --orange-soft:#FEF0D3;
   --red:#DC2626; --red-ink:#B91C1C; --red-soft:#FEE2E2;
   --gray:#94A3B8; --gray-ink:#475569; --gray-soft:#EEF1F6;
@@ -350,7 +350,7 @@ body{background:linear-gradient(180deg,var(--bg-top) 0,var(--bg) 320px,var(--bg)
 .k8 .top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .k8 .ico{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--c,#2E8BFF) 14%,var(--card));color:var(--c,#2E8BFF);flex:none;}
 .k8 .ico svg{width:16px;height:16px;}
-.k8.c-green{--c:#16A34A;border-color:var(--line);} .k8.c-red{--c:#2556D9;border-color:var(--line);} .k8.c-gray{--c:#DC2626;border-color:var(--line);} .k8.c-orange{--c:#F59E0B;border-color:var(--line);} .k8.c-blue{--c:#2E8BFF;}
+.k8.c-green{--c:#2FB584;border-color:var(--line);} .k8.c-red{--c:#2556D9;border-color:var(--line);} .k8.c-gray{--c:#DC2626;border-color:var(--line);} .k8.c-orange{--c:#F59E0B;border-color:var(--line);} .k8.c-blue{--c:#2E8BFF;}
 .k8.c-red .n{color:#2556D9;} .k8.c-gray .n{color:#DC2626;}
 .k8 .n{font-size:30px;}
 /* topbar chips */
@@ -423,7 +423,7 @@ th.sortable{cursor:pointer;} .rtable-wrap th.sortable:hover{color:var(--blue);}
   color-scheme:dark;
   --bg:#0A1322; --bg-top:#0E1B33; --card:#111C30; --card-2:#0F1829; --line:#223250; --line-2:#1A2740; --hover:#162540; --thead:#17243D;
   --ink:#E7EEF9; --ink-2:#B9C6DA; --mute:#8A9BB6; --blue:#4F86F7; --blue-hover:#6A9CFA; --blue-soft:#15294D; --navy:#E6EEFC;
-  --green-ink:#86EFAC; --green-soft:#10301E; --orange-ink:#FCD34D; --orange-soft:#3A2A0A; --red-ink:#FCA5A5; --red-soft:#3C1518;
+  --green-ink:#7FDDBC; --green-soft:#10302A; --orange-ink:#FCD34D; --orange-soft:#3A2A0A; --red-ink:#FCA5A5; --red-soft:#3C1518;
   --gray-ink:#C5D0E0; --gray-soft:#1F2A3E; --sky-ink:#7DD3FC; --sky-soft:#0C2F44; --pink-ink:#F9A8D4; --pink-soft:#3D1530; --indigo-ink:#A5B4FC; --indigo-soft:#1E2352;
   --topbar-a:rgba(14,27,51,.96); --topbar-b:rgba(10,19,34,.92); --note-ink:#FCD9A0;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
@@ -543,6 +543,9 @@ details.fu{border:1px solid var(--line);border-radius:14px;background:var(--card
 .wk-lb{display:grid;grid-template-columns:1fr 1fr;gap:16px;} @media(max-width:900px){.wk-lb{grid-template-columns:1fr;}} .wk-lb h3{margin:0 0 8px;font-size:14px;} .wk-lb .good h3{color:var(--green-ink);} .wk-lb .bad h3{color:var(--red-ink);}
 .wk-tools{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;}
 @media print{ body[data-view=weekly] .sidebar,body[data-view=weekly] .topbar,body[data-view=weekly] .scrim,body[data-view=weekly] #toast,body[data-view=weekly] .no-print{display:none !important;} body[data-view=weekly] .view{display:none !important;} body[data-view=weekly] #v-weekly{display:block !important;} body[data-view=weekly] .main{padding:0 !important;} body{background:#fff !important;} .wk-c,.wk-t th,.wk-t tr.tot td{-webkit-print-color-adjust:exact;print-color-adjust:exact;} }
+.legend{gap:4px;} .lg{padding:8px 10px;border-radius:12px;transition:background .15s,transform .15s;} .lg:hover{background:var(--hover);transform:translateX(2px);}
+.lg i{width:12px;height:12px;border-radius:5px;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 0%,transparent),0 2px 6px -1px rgba(0,0,0,.25);}
+.lg .n{font-weight:800;font-variant-numeric:tabular-nums;} .lg .p{padding:2px 8px;border-radius:20px;background:var(--card-2);border:1px solid var(--line);font-size:11px;font-weight:700;color:var(--mute);}
 </style>
 </head>
 <body>
@@ -756,7 +759,7 @@ const FIELD_ALIASES = {
 
 /* Status turunan (kolom D, dan Action Description untuk WO yang belum selesai) */
 const ST = {
-  SELESAI:{label:'Selesai', cls:'b-green', color:'#16A34A', ico:'circle-check', tone:'t-green'},
+  SELESAI:{label:'Selesai', cls:'b-green', color:'#2FB584', ico:'circle-check', tone:'t-green'},
   PROSES:{label:'Sedang Proses', cls:'b-orange', color:'#F59E0B', ico:'loader', tone:'t-orange'},
   JADWAL:{label:'Sudah Dijadwalkan', cls:'b-indigo', color:'#6366F1', ico:'calendar-check', tone:'t-indigo'},
   DISTRIB:{label:'Sudah Distribusi', cls:'b-sky', color:'#0EA5E9', ico:'send', tone:'t-sky'},
@@ -983,7 +986,7 @@ function classifyCancel(af,av,aw,raw){
     [/auto\s*cancel|otomatis|expired|timeout|digantikan|diganti\s*(dengan|wo)|wo\s*baru|dibatalkan\s*(admin|sistem|cs|helpdesk)|\badmin\b/,'Dibatalkan sistem/admin (WO diganti/expired)']
   ];
   for(const [re,lab] of rules) if(re.test(t)) return { label:CX+lab, review:false };
-  return { label:CX+(body?'Alasan lain (perlu review)':'Alasan tidak tercatat'), review:true, why:body?'Alasan pembatalan belum dikenali dari AF/AV/AW.':'Kolom AF, AV dan AW kosong.' };
+  return { label:body?CX+'Alasan lain (perlu review)':'WO Dibatalkan', review:!!body, why:body?'Alasan pembatalan belum dikenali dari AF/AV/AW.':'Kolom AF, AV dan AW kosong.' };
 }
 
 /* ============================================================
@@ -1157,17 +1160,17 @@ function renderMb(){
   const el=$('mbStrip'); if(!el) return; if(VIEW!=='dashboard'){ el.classList.remove('show'); return; }
   el.classList.add('show');
   if(!MB.data){
-    el.innerHTML=`<h4>Sinkron Metabase <span class="b b-gray">belum tersambung</span></h4><div style="font-size:12.5px;color:var(--mute);line-height:1.5">${MB.busy?'Mengambil angka dari Metabase…':(MB_PROXY?'Proxy tidak merespons ('+esc(MB.err)+'). ':'Browser memblokir akses langsung ke Metabase (CORS). ')+'Hubungkan lewat <b>Apps Script proxy</b>: ikon filter di kanan atas, kolom "URL Apps Script proxy". Sampai tersambung, angka memakai Spreadsheet.'} <button class="lnk" id="mbRetry">coba lagi</button></div>`; const b=$('mbRetry'); if(b) b.onclick=fetchMb; return; }
+    el.innerHTML=`<h4>Sinkron Metabase <span class="b b-gray">belum tersambung</span></h4><div style="font-size:12.5px;color:var(--mute);line-height:1.5">${MB.busy?'Mengambil angka dari Metabase…':(MB_PROXY?'Proxy tidak merespons ('+esc(MB.err||'tidak ada jawaban / waktu habis')+'). Pastikan skrip terbaru (Code v3) sudah di-deploy dengan Versi baru dan akses &quot;Siapa saja&quot;. ':'Browser memblokir akses langsung ke Metabase (CORS). ')+'Hubungkan lewat <b>Apps Script proxy</b>: ikon filter di kanan atas, kolom "URL Apps Script proxy". Sampai tersambung, angka memakai Spreadsheet.'} <button class="lnk" id="mbRetry">coba lagi</button></div>`; const b=$('mbRetry'); if(b) b.onclick=fetchMb; return; }
   const A=ALL_ROWS, d={total:A.length,close:A.filter(r=>r.st==='SELESAI').length,cancel:A.filter(r=>r.st==='CANCEL').length,over:A.filter(r=>r.sla==='OVER').length}; d.open=d.total-d.close-d.cancel;
   const m=MB.data, it=[['total','Total WO'],['close','WO CLOSE'],['open','WO OPEN'],['cancel','WO CANCEL'],['over','Over SLA']];
   const sc={}; A.forEach(r=>{ const k=r.statusRaw||'(kosong)'; sc[k]=(sc[k]||0)+1; });
   const keys=[...new Set([...Object.keys(m.byStatus),...Object.keys(sc)])].sort((x,y)=>(m.byStatus[y]||0)-(m.byStatus[x]||0));
   el.innerHTML=`<h4>Sinkron Metabase <span class="b b-ok">API aktif</span><span style="text-transform:none;font-weight:500">pembaruan ${MB.ts?String(MB.ts.getHours()).padStart(2,'0')+':'+String(MB.ts.getMinutes()).padStart(2,'0'):''} · tiket: ${esc(MB_TIKET||'semua')}</span><label class="chk" style="margin-left:auto;text-transform:none;font-weight:600"><input type="checkbox" id="mbUse"${USE_MB?' checked':''}> Samakan angka KPI dengan Metabase</label></h4>
    <div class="mb-grid">${it.map(([k,l])=>{ const df=d[k]-m[k]; return `<div class="mb-c"><div class="l">${l}</div><div class="m">${nf(m[k])}</div><div class="s">Spreadsheet ${nf(d[k])} · <span class="d ${df===0?'ok':'bad'}">${df===0?'sama':(df>0?'+':'')+nf(df)}</span></div></div>`; }).join('')}</div>
-   <details style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:600;color:var(--blue)">Rincian selisih per status (kolom D)</summary><div class="rtable-wrap" style="margin-top:8px"><table><thead><tr><th>Status</th><th class="num">Metabase</th><th class="num">Spreadsheet</th><th class="num">Selisih</th></tr></thead><tbody>${keys.map(k=>{ const a=m.byStatus[k]||0,b=sc[k]||0; return `<tr><td>${esc(k)}</td><td class="num">${nf(a)}</td><td class="num">${nf(b)}</td><td class="num" style="font-weight:700;color:${a===b?'var(--green-ink)':'var(--red-ink)'}">${a===b?'0':(b-a>0?'+':'')+nf(b-a)}</td></tr>`; }).join('')}</tbody></table></div></details>`;
+   <div style="margin-top:8px;font-size:11.5px;color:var(--mute)">Metabase dihitung langsung (real-time); Spreadsheet disinkron berkala (±5 menit). Selisih kecil = WO yang berubah status/baru dibuat sejak sinkron terakhir.</div><details style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:600;color:var(--blue)">Rincian selisih per status (kolom D)</summary><div class="rtable-wrap" style="margin-top:8px"><table><thead><tr><th>Status</th><th class="num">Metabase</th><th class="num">Spreadsheet</th><th class="num">Selisih</th></tr></thead><tbody>${keys.map(k=>{ const a=m.byStatus[k]||0,b=sc[k]||0; return `<tr><td>${esc(k)}</td><td class="num">${nf(a)}</td><td class="num">${nf(b)}</td><td class="num" style="font-weight:700;color:${a===b?'var(--green-ink)':'var(--red-ink)'}">${a===b?'0':(b-a>0?'+':'')+nf(b-a)}</td></tr>`; }).join('')}</tbody></table></div></details>`;
   const u=$('mbUse'); if(u) u.onchange=()=>{ USE_MB=u.checked; try{ localStorage.setItem('starlite_usemb',USE_MB?'1':'0'); }catch(e){} renderKpi(); renderStatus(); renderHero(); refreshIcons(); };
 }
-setInterval(()=>{ if(!document.hidden) fetchMb(); },5*60*1000);
+setInterval(()=>{ if(!document.hidden) fetchMb(); },60*1000);
 /* ---------- Summary Weekly CS ---------- */
 const BLN_F=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const WK={pre:'rep',from:'',to:'',mitra:'',region:'',kat:'',grp:'',minN:1,init:false};
@@ -1251,7 +1254,7 @@ function renderWeekly(){
 
 /* ---------- Follow Up Mitra ---------- */
 const FU={q:'',sort:'open',onlyUrg:false,detUrg:false,lim:40};
-const FU_COL=['#2556D9','#0EA5E9','#7C3AED','#16A34A','#F59E0B','#EC4899','#14B8A6','#F97316'];
+const FU_COL=['#2556D9','#0EA5E9','#7C3AED','#2FB584','#F59E0B','#EC4899','#14B8A6','#F97316'];
 (function(){ const v=document.createElement('div'); v.className='view'; v.id='v-followup'; $('v-kpi').parentNode.appendChild(v);
   const o=document.createElement('div'); o.className='fu-ov'; o.id='fuOv'; o.innerHTML='<div class="fu-md"><h3 id="fuTitle"></h3><textarea id="fuTxt" readonly></textarea><div class="hint">Teks sudah dicoba disalin otomatis. Bila clipboard browser tidak aktif, klik area teks lalu tekan Ctrl+A kemudian Ctrl+C.</div><div class="ft"><button class="btn" id="fuClose">Tutup</button><button class="btn btn-primary" id="fuCopy">Salin ke Clipboard</button></div></div>'; document.body.appendChild(o);
   $('fuClose').onclick=()=>o.classList.remove('show'); o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('show'); });
@@ -1464,7 +1467,7 @@ function showView(v){
   try{ history.replaceState(null,'','#'+v); }catch(e){}
   window.scrollTo(0,0); if(ALL_ROWS.length) renderAll();
 }
-let GRID='#EEF2F8'; const C_OPEN='#2556D9', C_CLOSE='#16A34A', C_CANCEL='#DC2626';
+let GRID='#EEF2F8'; const C_OPEN='#2556D9', C_CLOSE='#2FB584', C_CANCEL='#DC2626';
 const isDark=()=>document.documentElement.dataset.theme==='dark';
 const CARDC=()=>(getComputedStyle(document.documentElement).getPropertyValue('--card').trim()||'#fff');
 const isOpen = r => !['SELESAI','CANCEL'].includes(r.st);
@@ -1584,7 +1587,7 @@ function dcExport(){ const rows=dcRows(); if(!rows.length) return toast('Tidak a
   download(new Blob(['﻿'+Papa.unparse(out)],{type:'text/csv;charset=utf-8;'}),`Daily_WO_CLOSE_${DC.date}.csv`); toast('CSV diunduh ('+nf(rows.length)+' WO)'); }
 
 /* ---------- RCA ---------- */
-const PAL=['#2556D9','#16A34A','#F59E0B','#7C3AED','#0EA5E9','#EC4899','#14B8A6','#F97316','#64748B'];
+const PAL=['#2556D9','#2FB584','#F59E0B','#7C3AED','#0EA5E9','#EC4899','#14B8A6','#F97316','#64748B'];
 function renderRegion(){
   const rows=dRows(), by={};
   rows.forEach(r=>{ const m=by[r.region]=by[r.region]||{o:0,c:0,x:0,t:0}; m.t++; if(r.st==='SELESAI') m.c++; else if(r.st==='CANCEL') m.x++; else m.o++; });
@@ -1731,7 +1734,7 @@ function renderMitra(){
 let KM={mode:'auto',min:20,best:85,watch:70,tier:'all',q:'',sort:'rank',dir:1};
 try{ const s=JSON.parse(localStorage.getItem('starlite_km_v1')||'null'); if(s) KM=Object.assign(KM,s,{tier:'all',q:''}); }catch(e){}
 const KM_W={sla:.35,close:.30,back:.20,speed:.10,cancel:.05};
-const TIER={BEST:{l:'Terbaik',c:'#16A34A'},GOOD:{l:'Baik',c:'#2E8BFF'},WATCH:{l:'Perlu diawasi',c:'#DC2626'},DATA:{l:'Data kurang',c:'#94A3B8'}};
+const TIER={BEST:{l:'Terbaik',c:'#2FB584'},GOOD:{l:'Baik',c:'#2E8BFF'},WATCH:{l:'Perlu diawasi',c:'#DC2626'},DATA:{l:'Data kurang',c:'#94A3B8'}};
 const qtl=(arr,p)=>arr.length?arr[Math.min(arr.length-1,Math.floor(p*(arr.length-1)))]:0;
 let KM_CALC=null;
 function calcMitra(){
@@ -1950,12 +1953,9 @@ function topVals(key,n){ const m={}; ALL_ROWS.forEach(r=>{ const v=r[key]; if(v)
 const dl=(id,arr)=>`<datalist id="${id}">${arr.map(v=>`<option value="${esc(v)}"></option>`).join('')}</datalist>`;
 function editorHtml(r){
   const o=OVR[r.id]||{}, hasRca=r.st==='SELESAI'||r.st==='CANCEL';
-  const rcaBlock=hasRca?`<div class="fld" style="grid-column:1/-1"><label for="ovRca">RCA final — ketik bebas atau pilih saran (kosongkan untuk mengikuti otomatis${r.review0?': saat ini "Perlu Review"':''})</label>
-      <input type="text" id="ovRca" list="dlRca" value="${esc(o.rca||'')}" placeholder="${esc(r.rca0&&!r.review0?r.rca0:'Ketik RCA di sini')}" autocomplete="off">${dl('dlRca',rcaChoices(r.st))}</div>
-    <div class="fld"><label for="ovAv">Kerusakan karena (AV)</label><input type="text" id="ovAv" list="dlAv" value="${esc(o.av||'')}" placeholder="${esc(r.av||'Contoh: ONT rusak karena manusia')}" autocomplete="off">${dl('dlAv',topVals('av',200))}</div>
-    <div class="fld"><label for="ovAw">Tipe damage (AW)</label><input type="text" id="ovAw" list="dlAw" value="${esc(o.aw||'')}" placeholder="${esc(r.aw||'Contoh: ONT (Fisik)')}" autocomplete="off">${dl('dlAw',topVals('aw',200))}</div>
-    <div class="fld" style="grid-column:1/-1"><label for="ovAf">${r.st==='CANCEL'?'Alasan pembatalan / tindakan (AF)':'Tindakan perbaikan (AF)'}</label><input type="text" id="ovAf" list="dlAf" value="${esc(o.af||'')}" placeholder="${esc(r.af||'Contoh: Mengganti ONT')}" autocomplete="off">${dl('dlAf',topVals('af',200))}</div>
-    <div class="ov-note" style="grid-column:1/-1;margin-top:-4px">Jika RCA final dikosongkan tetapi tiga kolom di atas diisi, RCA tersusun otomatis: Tipe damage - Kerusakan karena - Tindakan.</div>`
+  const rcaBlock=hasRca?`<div class="fld" style="grid-column:1/-1"><label for="ovRca">RCA${r.st==='CANCEL'?' pembatalan':''} — ketik bebas atau pilih saran${r.review0?' (saat ini "Perlu Review")':''}</label>
+      <input type="text" id="ovRca" list="dlRca" value="${esc(o.rca||'')}" placeholder="${esc(r.rca0&&!r.review0?r.rca0:(r.st==='CANCEL'?'WO Dibatalkan - alasan':'Ketik RCA di sini'))}" autocomplete="off">${dl('dlRca',rcaChoices(r.st))}</div>
+    <div class="ov-note" style="grid-column:1/-1;margin-top:-4px">Isi RCA bila otomatis tidak muncul atau perlu review. Kosongkan untuk kembali ke RCA otomatis.</div>`
     :`<div class="fld"><label for="ovFu">Status tindak lanjut</label><select id="ovFu"><option value="">— pilih —</option>${FU_OPT.map(c=>`<option${o.fu===c?' selected':''}>${esc(c)}</option>`).join('')}</select></div>
       <div class="fld"><label for="ovCause">Dugaan penyebab (sementara, tidak masuk statistik RCA)</label><input type="text" id="ovCause" value="${esc(o.cause||'')}" placeholder="Contoh: ONT mati, kabel putus"></div>`;
   return `<div class="h4">Koreksi manual</div><div class="edit-box">${rcaBlock}
@@ -1973,17 +1973,18 @@ function keepOpen(r){
   const sp2=scrollParentOf($('mBody')); if(sp2) sp2.scrollTop=top;
 }
 window.addEventListener('error',e=>{ try{ toast('Terjadi galat: '+(e.message||'tidak diketahui')); }catch(x){} });
+function closeSaved(){ $('detailOv').classList.remove('show'); try{ renderAll(); }catch(e){ console.error(e); } try{ refreshIcons(); }catch(e){} }
 function bindEditor(r){
   $('ovSave').addEventListener('click',()=>{
     const o={ pic:$('ovPic').value.trim(), note:$('ovNote').value.trim(), at:new Date().toISOString() };
-    if(r.st==='SELESAI'||r.st==='CANCEL'){ o.av=$('ovAv').value.trim(); o.aw=$('ovAw').value.trim(); o.af=$('ovAf').value.trim(); o.rca=$('ovRca').value.trim();
-      if(!o.rca&&(o.av||o.aw||o.af)) o.rca=[o.aw||r.aw,o.av||r.av,o.af||r.af].map(x=>String(x||'').trim()).filter(Boolean).map((x,i)=>i?x.toLowerCase():x).join(' - '); }
+    if(r.st==='SELESAI'||r.st==='CANCEL'){ o.rca=$('ovRca').value.trim();
+      if(r.st==='CANCEL'&&o.rca&&!/^wo dibatalkan/i.test(o.rca)) o.rca=CX+o.rca; }
     else { o.fu=$('ovFu').value; o.cause=$('ovCause').value.trim(); }
-    const empty=!(o.rca||o.av||o.aw||o.af||o.fu||o.cause||o.pic||o.note);
+    const empty=!(o.rca||o.fu||o.cause||o.pic||o.note);
     if(empty) delete OVR[r.id]; else OVR[r.id]=o;
-    saveOvr(); ALL_ROWS.filter(x=>x.id===r.id).forEach(applyOvr); toast(empty?'Koreksi dihapus':'Koreksi disimpan'); keepOpen(r);
+    saveOvr(); ALL_ROWS.filter(x=>x.id===r.id).forEach(applyOvr); toast(empty?'Koreksi dihapus':'Koreksi disimpan'); closeSaved();
   });
-  $('ovDel').addEventListener('click',()=>{ delete OVR[r.id]; saveOvr(); ALL_ROWS.filter(x=>x.id===r.id).forEach(applyOvr); toast('Koreksi dihapus'); keepOpen(r); });
+  $('ovDel').addEventListener('click',()=>{ delete OVR[r.id]; saveOvr(); ALL_ROWS.filter(x=>x.id===r.id).forEach(applyOvr); toast('Koreksi dihapus'); closeSaved(); });
 }
 function ovExport(){ const n=Object.keys(OVR).length; if(!n) return toast('Belum ada koreksi manual'); download(new Blob([JSON.stringify(OVR,null,1)],{type:'application/json'}),`Koreksi_Manual_WO_${stamp()}.json`); toast('Diekspor: '+n+' WO'); }
 function ovImport(file){ if(!file) return; const fr=new FileReader(); fr.onload=()=>{ try{ const j=JSON.parse(fr.result); if(!j||typeof j!=='object') throw 0; Object.assign(OVR,j); saveOvr(); ALL_ROWS.forEach(applyOvr); renderAll(); toast('Diimpor: '+Object.keys(j).length+' WO'); closeDrawer(); }catch(e){ toast('File koreksi tidak valid'); } }; fr.readAsText(file); }
