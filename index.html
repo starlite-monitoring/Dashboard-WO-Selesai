@@ -1221,7 +1221,7 @@ function renderMb(){
   const el=$('mbStrip'); if(!el) return; if(VIEW!=='dashboard'){ el.classList.remove('show'); return; }
   el.classList.add('show');
   if(!MB.data){
-    el.innerHTML=`<h4>Sinkron Metabase <span class="b b-gray">belum tersambung</span></h4><div style="font-size:12.5px;color:var(--mute);line-height:1.5">${MB.busy?'Mengambil angka dari Metabase…':(MB_PROXY?'Proxy tidak merespons ('+esc(MB.err||'tidak ada jawaban / waktu habis')+'). Pastikan skrip terbaru (Code v6) sudah di-deploy dengan Versi baru dan akses &quot;Siapa saja&quot;. ':'Browser memblokir akses langsung ke Metabase (CORS). ')+'Hubungkan lewat <b>Apps Script proxy</b>: ikon filter di kanan atas, kolom "URL Apps Script proxy". Sampai tersambung, angka memakai Spreadsheet.'} <button class="lnk" id="mbRetry">coba lagi</button></div>`; const b=$('mbRetry'); if(b) b.onclick=fetchMb; return; }
+    el.innerHTML=`<h4>Sinkron Metabase <span class="b b-gray">belum tersambung</span></h4><div style="font-size:12.5px;color:var(--mute);line-height:1.5">${MB.busy?'Mengambil angka dari Metabase…':(MB_PROXY?'Proxy tidak merespons ('+esc(MB.err||'tidak ada jawaban / waktu habis')+'). Penyebab umum: URL /exec belum diisi dengan URL deployment terbaru, atau akses deployment bukan &quot;Siapa saja&quot; (harus Anyone, bukan Anyone with Google account). Pastikan Code v7 sudah di-deploy dengan Versi baru. ':'Browser memblokir akses langsung ke Metabase (CORS). ')+'Hubungkan lewat <b>Apps Script proxy</b>: ikon filter di kanan atas, kolom "URL Apps Script proxy". Sampai tersambung, angka memakai Spreadsheet.'} <button class="lnk" id="mbRetry">coba lagi</button></div>`; const b=$('mbRetry'); if(b) b.onclick=fetchMb; return; }
   const A=ALL_ROWS, d={total:A.length,close:A.filter(r=>r.st==='SELESAI').length,cancel:A.filter(r=>r.st==='CANCEL').length,over:A.filter(r=>r.sla==='OVER').length}; d.open=d.total-d.close-d.cancel;
   const m=MB.data, it=[['total','Total WO'],['close','WO CLOSE'],['open','WO OPEN'],['cancel','WO CANCEL'],['over','Over SLA']];
   const sc={}; A.forEach(r=>{ const k=r.statusRaw||'(kosong)'; sc[k]=(sc[k]||0)+1; });
@@ -1314,7 +1314,7 @@ function renderWeekly(){
 }
 
 /* ============================================================
-   MONITORING WO DISMANTLE (kategori "Pengambilan ONT (Dismantle)", dibaca lewat proxy dari sheet LogDismantle)
+   MONITORING WO DISMANTLE (kategori "Pengambilan ONT (Dismantle)", dibaca langsung dari Metabase lewat Apps Script proxy)
    ============================================================ */
 const DSM={ver:'',items:[],ts:null,err:'',busy:false,q:'',mitra:'',stasiun:'',st:'OPEN',sort:'umur',lim:100};
 (function(){ const v=document.createElement('div'); v.className='view'; v.id='v-dismantle'; $('v-kpi').parentNode.appendChild(v); })();
@@ -1351,7 +1351,7 @@ function renderDismantle(){
   const root=$('v-dismantle'), A=DSM.items;
   if(!A.length){
     root.innerHTML=`<div class="card panel"><div class="panel-head"><div><h2>Monitoring WO Dismantle</h2><div class="sub">Kategori Pengambilan ONT (Dismantle) · sumber: Metabase lewat Apps Script</div></div></div>
-      <div class="wk-n" style="text-align:left">${DSM.busy?'Mengambil data WO Dismantle…':(DSM.err?('Belum dapat mengambil data ('+esc(DSM.err)+'). Pastikan Code v4 sudah di-deploy (Versi baru), fungsi <b>mulaiSemua</b> sudah dijalankan, dan URL proxy terisi di pengaturan.'):'Belum ada data WO Dismantle. Jalankan <b>tarikDismantleWO</b> di Apps Script, lalu muat ulang.')} <button class="lnk" id="dsmRetry">coba lagi</button></div></div>`;
+      <div class="wk-n" style="text-align:left">${DSM.busy?'Mengambil data WO Dismantle…':(DSM.err?('Belum dapat mengambil data ('+esc(DSM.err)+'). Pastikan Code v7 sudah di-deploy (Versi baru, akses Siapa saja) dan URL /exec terisi di pengaturan (ikon filter, kolom URL Apps Script proxy).'):'Belum ada data WO Dismantle dari Metabase.')} <button class="lnk" id="dsmRetry">coba lagi</button></div></div>`;
     const b=$('dsmRetry'); if(b) b.onclick=fetchDsm; return; }
   const open=A.filter(r=>r.open), close=A.filter(r=>r.st==='SELESAI'), cancel=A.filter(r=>r.st==='CANCEL'), over=open.filter(r=>r.sla==='OVER'), avgAge=open.length?open.reduce((s,r)=>s+(r.umur||0),0)/open.length:0;
   const mitras=uniqSorted(A.map(r=>r.mitra)), stns=uniqSorted(A.filter(r=>!DSM.mitra||r.mitra===DSM.mitra).map(r=>r.stasiun));
@@ -1364,7 +1364,7 @@ function renderDismantle(){
     <div class="wk-c"><div class="l">WO Open</div><div class="v">${nf(open.length)}</div><div class="u">${pct(open.length,A.length)} dari total</div></div>
     <div class="wk-c"><div class="l">WO Close</div><div class="v">${nf(close.length)}</div><div class="u">${pct(close.length,A.length)}</div></div>
     <div class="wk-c"><div class="l">Open Over SLA</div><div class="v">${nf(over.length)}</div><div class="u">rata-rata umur open ${avgAge.toFixed(1).replace('.',',')} hari</div></div></div>
-   <div class="count" style="margin:8px 2px">Data sheet LogDismantle diperbarui ${DSM.upd?fmtDT(DSM.upd):'-'} · cek ulang tiap 1 menit${DSM.err?' · <span style="color:var(--red-ink)">gagal memperbarui: '+esc(DSM.err)+'</span>':''} · Cancel: ${nf(cancel.length)}</div>
+   <div class="count" style="margin:8px 2px">Data langsung dari Metabase, diperbarui ${DSM.upd?fmtDT(DSM.upd):'-'} · cek ulang tiap 1 menit${DSM.err?' · <span style="color:var(--red-ink)">gagal memperbarui: '+esc(DSM.err)+'</span>':''} · Cancel: ${nf(cancel.length)}</div>
    <div class="two sec" style="margin-top:12px"><div class="card panel"><div class="panel-head"><div><h2>Komposisi Status</h2></div></div><div style="position:relative;height:250px"><canvas id="chDsmSt"></canvas></div></div>
     <div class="card panel"><div class="panel-head"><div><h2>WO Open per Mitra</h2><div class="sub">Top 12 · merah = Over SLA</div></div></div><div style="position:relative;height:${Math.max(250,Math.min(12,mList.length)*26+70)}px"><canvas id="chDsmM"></canvas></div></div></div>
    <div class="two sec" style="margin-top:12px"><div class="card panel"><div class="panel-head"><div><h2>WO Open per Stasiun</h2><div class="sub">Top 12</div></div></div><div style="position:relative;height:320px"><canvas id="chDsmStn"></canvas></div></div>
