@@ -1317,11 +1317,12 @@ function renderWeekly(){
    ============================================================ */
 const DSM={ver:'',items:[],ts:null,err:'',busy:false,q:'',mitra:'',stasiun:'',st:'OPEN',sort:'umur',lim:100};
 (function(){ const v=document.createElement('div'); v.className='view'; v.id='v-dismantle'; $('v-kpi').parentNode.appendChild(v); })();
-const DSM_COLS={ id:['workorderid','woid','idwo','wonumber','workordernumber','nomorwo','noticket','ticketid','workorder','wo'], created:['workordercreatedat'], status:['statuscategory'], mitra:['partnername','namapartner'], stasiun:['stationname','stasiun'], region:['region'], cust:['customerid','idpelanggan'], nama:['customername','namapelanggan'], ikrp:['ikrpartnername'], sla:['statussla'], comp:['visitcompletedtime'], tipe:['tipeworkorder'] };
+const DSM_COLS={ id:['workorderid','woid','idwo','wonumber','workordernumber','nomorwo','noticket','ticketid','workorder','wo'], created:['workordercreatedat'], status:['statuscategory'], mitra:['partnername','namapartner'], stasiun:['stationname','stasiun'], region:['region'], cust:['customerid','idpelanggan'], nama:['customername','namapelanggan'], ikrp:['ikrpartnername'], kat:['kategoriworkorder'], sla:['statussla'], comp:['visitcompletedtime'], tipe:['tipeworkorder'] };
 function dsmBuild(cols,rows){
   const nh=cols.map(norm), ix={}; Object.keys(DSM_COLS).forEach(f=>{ for(const a of DSM_COLS[f]){ const i=nh.indexOf(a); if(i>-1){ ix[f]=i; break; } } });
   if(ix.id==null){ const i=cols.findIndex(h=>ID_RE.test(h)); if(i>-1) ix.id=i; }
   const g=(r,f)=>ix[f]==null?'':String(r[ix[f]]==null?'':r[ix[f]]).trim(), today=new Date(); today.setHours(0,0,0,0);
+  if(ix.kat!=null) rows=rows.filter(r=>/dismantle/i.test(String(r[ix.kat]==null?'':r[ix.kat])));
   return rows.map((r,i)=>{ const statusRaw=g(r,'status'), st=statusKey(statusRaw), cr=parseDT(g(r,'created')), comp=parseDT(g(r,'comp')), open=!['SELESAI','CANCEL'].includes(st), tgl=cr?new Date(cr.getFullYear(),cr.getMonth(),cr.getDate()):null;
     return { id:g(r,'id')||('ROW-'+(i+2)), statusRaw, st, open, created:cr, comp, tgl, umur:(open&&tgl)?Math.max(0,Math.floor((today-tgl)/86400000)):null, mitra:g(r,'mitra')||'(Tanpa Mitra)', stasiun:g(r,'stasiun')||g(r,'region')||'(Tanpa Stasiun)', region:g(r,'region'), cust:g(r,'cust'), nama:g(r,'nama'), ikrp:g(r,'ikrp'), sla:slaKey(g(r,'sla')), slaRaw:g(r,'sla') }; });
 }
@@ -1419,8 +1420,8 @@ function ikrMsg(o){
   const L=[`🚨 *${o.title}* 🚨`,'',`📋 *Ringkasan* :`,`*${o.name}*`,`- ${nf(o.rows.length)} ${o.unit} Open`,`- Urgent (≥ SLA) : ${nf(o.urgent)}`,''];
   stnGroups(o.rows).forEach(g=>{
     L.push(`*WO OPEN ${o.short||o.name} STASIUN ${g.names.join(' & ')}* (${nf(g.rows.length)} WO)`);
-    const ik={}; g.rows.forEach(r=>{ const k=r.ikrp||'(IKR Partner tidak tercatat)'; (ik[k]=ik[k]||[]).push(r); });
-    Object.keys(ik).sort((a,b)=>ik[b].length-ik[a].length||a.localeCompare(b)).forEach(k=>L.push(`- ${k} : ${nf(ik[k].length)} WO → ${ik[k].map(r=>r.cust||r.id).join(', ')}`));
+    const ik={}, lab={}; g.rows.forEach(r=>{ const raw=String(r.ikrp||'').replace(/\s+/g,' ').trim()||'(IKR Partner tidak tercatat)', k=raw.toUpperCase(); lab[k]=lab[k]||raw; (ik[k]=ik[k]||[]).push(r); });
+    Object.keys(ik).sort((a,b)=>ik[b].length-ik[a].length||a.localeCompare(b)).forEach(k=>L.push(`- ${lab[k]}: ${nf(ik[k].length)} WO → ${ik[k].map(r=>r.cust||r.id).join(', ')}`));
     L.push('');
   });
   L.push(o.tail); return L.join('\n');
