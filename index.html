@@ -1070,8 +1070,9 @@ function applyLive(data){
   LIVE.rows.forEach(lr=>{ const row=map.map(m=>m<0?'':lr[m]); const k=String(row[iId]).trim(); const p=idx.get(k); if(p!=null) out[p]=row; else { idx.set(k,out.length); out.push(row); } });
   return out;
 }
+const LIVE_ON=false; // v6: tarikan Visit apa adanya (tanpa sinkron live); ubah ke true hanya jika memakai Code v4/v5
 async function fetchLive(){
-  if(!MB_PROXY||LIVE_BUSY) return; LIVE_BUSY=true;
+  if(!LIVE_ON||!MB_PROXY||LIVE_BUSY) return; LIVE_BUSY=true;
   try{
     const j=JSON.parse(await fetchTimeout(MB_PROXY+'?mode=live&ver='+encodeURIComponent(LIVE_VER)+'&_='+Date.now(),45000));
     if(j&&j.ok&&!j.same&&j.cols&&j.cols.length){
@@ -1220,7 +1221,7 @@ function renderMb(){
   const el=$('mbStrip'); if(!el) return; if(VIEW!=='dashboard'){ el.classList.remove('show'); return; }
   el.classList.add('show');
   if(!MB.data){
-    el.innerHTML=`<h4>Sinkron Metabase <span class="b b-gray">belum tersambung</span></h4><div style="font-size:12.5px;color:var(--mute);line-height:1.5">${MB.busy?'Mengambil angka dari Metabase…':(MB_PROXY?'Proxy tidak merespons ('+esc(MB.err||'tidak ada jawaban / waktu habis')+'). Pastikan skrip terbaru (Code v3) sudah di-deploy dengan Versi baru dan akses &quot;Siapa saja&quot;. ':'Browser memblokir akses langsung ke Metabase (CORS). ')+'Hubungkan lewat <b>Apps Script proxy</b>: ikon filter di kanan atas, kolom "URL Apps Script proxy". Sampai tersambung, angka memakai Spreadsheet.'} <button class="lnk" id="mbRetry">coba lagi</button></div>`; const b=$('mbRetry'); if(b) b.onclick=fetchMb; return; }
+    el.innerHTML=`<h4>Sinkron Metabase <span class="b b-gray">belum tersambung</span></h4><div style="font-size:12.5px;color:var(--mute);line-height:1.5">${MB.busy?'Mengambil angka dari Metabase…':(MB_PROXY?'Proxy tidak merespons ('+esc(MB.err||'tidak ada jawaban / waktu habis')+'). Pastikan skrip terbaru (Code v6) sudah di-deploy dengan Versi baru dan akses &quot;Siapa saja&quot;. ':'Browser memblokir akses langsung ke Metabase (CORS). ')+'Hubungkan lewat <b>Apps Script proxy</b>: ikon filter di kanan atas, kolom "URL Apps Script proxy". Sampai tersambung, angka memakai Spreadsheet.'} <button class="lnk" id="mbRetry">coba lagi</button></div>`; const b=$('mbRetry'); if(b) b.onclick=fetchMb; return; }
   const A=ALL_ROWS, d={total:A.length,close:A.filter(r=>r.st==='SELESAI').length,cancel:A.filter(r=>r.st==='CANCEL').length,over:A.filter(r=>r.sla==='OVER').length}; d.open=d.total-d.close-d.cancel;
   const m=MB.data, it=[['total','Total WO'],['close','WO CLOSE'],['open','WO OPEN'],['cancel','WO CANCEL'],['over','Over SLA']];
   const sc={}; A.forEach(r=>{ const k=r.statusRaw||'(kosong)'; sc[k]=(sc[k]||0)+1; });
