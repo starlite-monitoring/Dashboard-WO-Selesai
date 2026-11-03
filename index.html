@@ -733,7 +733,7 @@ const POS = { tgl_create:0, tgl_complete:10, status:3, sla:7, action_desc:31, ke
 const FIELD_LABELS = {
   id_wo:'Nomor WO / Ticket', tgl_create:'Work Order Created At — kolom A (awal hitung SLA)', nama:'Nama Pelanggan', customer_id:'ID Pelanggan',
   alamat:'Alamat Pelanggan', region:'Region / Area', stasiun:'Stasiun', mitra:'Mitra / Vendor',
-  kategori:'Jenis Pekerjaan', tgl_visit:'Jadwal Visit', teknisi:'Teknisi / Petugas', tgl_complete:'Visit Completed Time — kolom K (akhir hitung SLA)', tgl_close:'Tanggal Selesai', ikr:'Dibuat oleh / Nama IKR (opsional)', assign_t:'Assign Time (opsional)', ts_t:'Troubleshooting Time (opsional)', tiket:'Status Tiket (opsional)', durasi:'Durasi penyelesaian (untuk AVERAGE SLA)',
+  kategori:'Jenis Pekerjaan', tgl_visit:'Jadwal Visit', teknisi:'Teknisi / Petugas', tgl_complete:'Visit Completed Time — kolom K (akhir hitung SLA)', tgl_close:'Tanggal Selesai', ikr:'Dibuat oleh / Nama IKR (opsional)', ikrp:'IKR Partner Name — kolom AM (opsional)', assign_t:'Assign Time (opsional)', ts_t:'Troubleshooting Time (opsional)', tiket:'Status Tiket (opsional)', durasi:'Durasi penyelesaian (untuk AVERAGE SLA)',
   status:'Status WO (Status Category) — kolom D', sla:'Status SLA — kolom H',
   action_desc:'Action Description — kolom AF', kerusakan:'Kerusakan Karena — kolom AV', tipe_damage:'Tipe Damage — kolom AW'
 };
@@ -752,7 +752,8 @@ const FIELD_ALIASES = {
   durasi:['durasisla','durasipenyelesaian','durasi','duration','lamapenyelesaian','slahours','jamsla','mttr','lamawo'],
   tgl_complete:['wocompleted','wocompleteddate','wocompletedate','wocompletedat','completedat','completeddate','completedtime','tanggalcompleted','tglcompleted','wocomplete','completed','complete','woselesai'],
   tiket:['statustiket','statusticket','tiketstatus'],
-  ikr:['namaikr','ikrpartnername','dibuatoleh','createdby','pembuat'],
+  ikr:['namaikr','dibuatoleh','createdby','pembuat'],
+  ikrp:['ikrpartnername'],
   assign_t:['assigntime','assigntimehour','waktuassign','assignedat','assigndate','tanggalassign','woassignedat','waktuassigned'],
   ts_t:['troubleshootingtime','troubleshootingtimehour','waktutroubleshooting','waktuts','tstime'],
   tgl_close:['tanggalclose','tglclose','closedat','tanggalselesai','closedate','waktuclose','closetime','waktuselesai','tglselesai','finishdate']
@@ -796,7 +797,7 @@ const LS_OVR='starlite_wo_ovr_v1'; let OVR={};
 try{ OVR=JSON.parse(localStorage.getItem(LS_OVR)||'{}')||{}; }catch(e){ OVR={}; }
 function saveOvr(){ try{ localStorage.setItem(LS_OVR,JSON.stringify(OVR)); return true; }catch(e){ toast('Penyimpanan browser diblokir; koreksi hanya berlaku selama halaman terbuka'); return false; } }
 function applyOvr(r){ r.rca=r.rca0; r.review=r.review0; r.why=r.why0; r.manual=false; const o=OVR[r.id]; r.ovr=o||null; if(o&&(r.st==='SELESAI'||r.st==='CANCEL')&&o.rca){ r.rca=o.rca; r.review=false; r.manual=true; r.why='RCA diisi manual'; } }
-const NAV=[['dashboard','layout-dashboard','Dashboard WO Visit'],['detail','clipboard-list','Detail WO Visit'],['kpi','trophy','KPI Mitra'],['followup','send','Follow Up Mitra'],['weekly','file-text','Summary Weekly CS']];
+const NAV=[['dashboard','layout-dashboard','Dashboard WO Visit'],['detail','clipboard-list','Detail WO Visit'],['kpi','trophy','KPI Mitra'],['followup','send','Follow Up Mitra'],['weekly','file-text','Summary Weekly CS'],['dismantle','unplug','Monitoring WO Dismantle']];
 const LS_SCOPE='starlite_scope_v2';
 let KAT_ANY=true, SCOPE={from:'2026-05-01',to:'2027-01-31',kat:null,tiket:''}, SCOPE_INFO={raw:0,after:0,kats:{},tikets:{}};
 try{ const sc=JSON.parse(localStorage.getItem(LS_SCOPE)||'null'); if(sc) SCOPE=Object.assign(SCOPE,sc); }catch(e){}
@@ -820,7 +821,7 @@ const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 const nf = n => Number(n||0).toLocaleString('id-ID');
 const pct = (a,b) => b ? (a/b*100).toFixed(1).replace('.',',')+'%' : '0%';
 const ic = (n,cls) => svgIcon(n,cls);
-const ICONS={"copy": [["rect", {"width": "14", "height": "14", "x": "8", "y": "8", "rx": "2", "ry": "2"}], ["path", {"d": "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"}]], "download": [["path", {"d": "M12 15V3"}], ["path", {"d": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}], ["path", {"d": "m7 10 5 5 5-5"}]], "file-spreadsheet": [["path", {"d": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}], ["path", {"d": "M14 2v5a1 1 0 0 0 1 1h5"}], ["path", {"d": "M8 13h2"}], ["path", {"d": "M14 13h2"}], ["path", {"d": "M8 17h2"}], ["path", {"d": "M14 17h2"}]], "file-up": [["path", {"d": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}], ["path", {"d": "M14 2v5a1 1 0 0 0 1 1h5"}], ["path", {"d": "M12 12v6"}], ["path", {"d": "m15 15-3-3-3 3"}]], "menu": [["path", {"d": "M4 5h16"}], ["path", {"d": "M4 12h16"}], ["path", {"d": "M4 19h16"}]], "refresh-cw": [["path", {"d": "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"}], ["path", {"d": "M21 3v5h-5"}], ["path", {"d": "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"}], ["path", {"d": "M8 16H3v5"}]], "rotate-ccw": [["path", {"d": "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"}], ["path", {"d": "M3 3v5h5"}]], "search": [["path", {"d": "m21 21-4.34-4.34"}], ["circle", {"cx": "11", "cy": "11", "r": "8"}]], "settings": [["path", {"d": "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"}], ["circle", {"cx": "12", "cy": "12", "r": "3"}]], "x": [["path", {"d": "M18 6 6 18"}], ["path", {"d": "m6 6 12 12"}]], "calendar-clock": [["path", {"d": "M16 14v2.2l1.6 1"}], ["path", {"d": "M16 2v3"}], ["path", {"d": "M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"}], ["path", {"d": "M3 9h5.859"}], ["path", {"d": "M8 2v3"}], ["circle", {"cx": "16", "cy": "16", "r": "6"}]], "chevron-left": [["path", {"d": "m15 18-6-6 6-6"}]], "chevron-right": [["path", {"d": "m9 18 6-6-6-6"}]], "eye": [["path", {"d": "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"}], ["circle", {"cx": "12", "cy": "12", "r": "3"}]], "pencil": [["path", {"d": "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"}], ["path", {"d": "m15 5 4 4"}]], "upload": [["path", {"d": "M12 3v12"}], ["path", {"d": "m17 8-5-5-5 5"}], ["path", {"d": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}]], "layout-dashboard": [["rect", {"width": "7", "height": "9", "x": "3", "y": "3", "rx": "1"}], ["rect", {"width": "7", "height": "5", "x": "14", "y": "3", "rx": "1"}], ["rect", {"width": "7", "height": "9", "x": "14", "y": "12", "rx": "1"}], ["rect", {"width": "7", "height": "5", "x": "3", "y": "16", "rx": "1"}]], "search-check": [["path", {"d": "m8 11 2 2 4-4"}], ["circle", {"cx": "11", "cy": "11", "r": "8"}], ["path", {"d": "m21 21-4.3-4.3"}]], "clipboard-list": [["rect", {"width": "8", "height": "4", "x": "8", "y": "2", "rx": "1", "ry": "1"}], ["path", {"d": "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"}], ["path", {"d": "M12 11h4"}], ["path", {"d": "M12 16h4"}], ["path", {"d": "M8 11h.01"}], ["path", {"d": "M8 16h.01"}]], "users": [["path", {"d": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"}], ["path", {"d": "M16 3.128a4 4 0 0 1 0 7.744"}], ["path", {"d": "M22 21v-2a4 4 0 0 0-3-3.87"}], ["circle", {"cx": "9", "cy": "7", "r": "4"}]], "layers": [["path", {"d": "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"}], ["path", {"d": "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"}], ["path", {"d": "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"}]], "circle-check": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "m16 9-5.5 5.5L8 12"}]], "hourglass": [["path", {"d": "M5 22h14"}], ["path", {"d": "M5 2h14"}], ["path", {"d": "M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"}], ["path", {"d": "M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"}]], "ban": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "M4.929 4.929 19.07 19.071"}]], "triangle-alert": [["path", {"d": "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"}], ["path", {"d": "M12 9v4"}], ["path", {"d": "M12 17h.01"}]], "shield-check": [["path", {"d": "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"}], ["path", {"d": "m9 12 2 2 4-4"}]], "timer": [["line", {"x1": "10", "x2": "14", "y1": "2", "y2": "2"}], ["line", {"x1": "12", "x2": "15", "y1": "14", "y2": "11"}], ["circle", {"cx": "12", "cy": "14", "r": "8"}]], "trophy": [["path", {"d": "M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"}], ["path", {"d": "M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"}], ["path", {"d": "M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"}], ["path", {"d": "M4 22h16"}], ["path", {"d": "M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"}], ["path", {"d": "M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"}]], "award": [["path", {"d": "m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"}], ["circle", {"cx": "12", "cy": "8", "r": "6"}]], "activity": [["path", {"d": "M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"}]], "target": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["circle", {"cx": "12", "cy": "12", "r": "6"}], ["circle", {"cx": "12", "cy": "12", "r": "2"}]], "calendar-check": [["path", {"d": "M8 2v3"}], ["path", {"d": "M16 2v3"}], ["rect", {"x": "3", "y": "3", "width": "18", "height": "18", "rx": "2"}], ["path", {"d": "M3 9h18"}], ["path", {"d": "m9 15 2 2 4-4"}]], "trending-up": [["path", {"d": "M16 7h6v6"}], ["path", {"d": "m22 7-8.5 8.5-5-5L2 17"}]], "list-checks": [["path", {"d": "M13 5h8"}], ["path", {"d": "M13 12h8"}], ["path", {"d": "M13 19h8"}], ["path", {"d": "m3 17 2 2 4-4"}], ["path", {"d": "m3 7 2 2 4-4"}]], "sun": [["circle", {"cx": "12", "cy": "12", "r": "4"}], ["path", {"d": "M12 2v2"}], ["path", {"d": "M12 20v2"}], ["path", {"d": "m4.93 4.93 1.41 1.41"}], ["path", {"d": "m17.66 17.66 1.41 1.41"}], ["path", {"d": "M2 12h2"}], ["path", {"d": "M20 12h2"}], ["path", {"d": "m6.34 17.66-1.41 1.41"}], ["path", {"d": "m19.07 4.93-1.41 1.41"}]], "moon": [["path", {"d": "M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"}]], "trash-2": [["path", {"d": "M10 11v6"}], ["path", {"d": "M14 11v6"}], ["path", {"d": "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"}], ["path", {"d": "M3 6h18"}], ["path", {"d": "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"}]], "save": [["path", {"d": "M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"}], ["path", {"d": "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"}], ["path", {"d": "M7 3v4a1 1 0 0 0 1 1h7"}]], "bell": [["path", {"d": "M10.268 21a2 2 0 0 0 3.464 0"}], ["path", {"d": "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"}]], "bell-ring": [["path", {"d": "M10.268 21a2 2 0 0 0 3.464 0"}], ["path", {"d": "M22 8c0-2.3-.8-4.3-2-6"}], ["path", {"d": "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"}], ["path", {"d": "M4 2C2.8 3.7 2 5.7 2 8"}]], "clock": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "M12 6v6l4 2"}]], "package-plus": [["path", {"d": "M12 22V12"}], ["path", {"d": "M16 17h6"}], ["path", {"d": "M19 14v6"}], ["path", {"d": "M21 10.535V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.729l7 4a2 2 0 0 0 2 .001l1.675-.955"}], ["path", {"d": "M3.29 7 12 12l8.71-5"}], ["path", {"d": "m7.5 4.27 8.997 5.148"}]], "list-filter": [["path", {"d": "M3 6h18"}], ["path", {"d": "M7 12h10"}], ["path", {"d": "M10 18h4"}]], "send": [["path", {"d": "M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"}], ["path", {"d": "m21.854 2.147-10.94 10.939"}]], "image": [["rect", {"width": "18", "height": "18", "x": "3", "y": "3", "rx": "2", "ry": "2"}], ["circle", {"cx": "9", "cy": "9", "r": "2"}], ["path", {"d": "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"}]], "clipboard-copy": [["rect", {"width": "8", "height": "4", "x": "8", "y": "2", "rx": "1", "ry": "1"}], ["path", {"d": "M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"}], ["path", {"d": "M16 4h2a2 2 0 0 1 2 2v4"}], ["path", {"d": "M21 14H11"}], ["path", {"d": "m15 10-4 4 4 4"}]], "file-text": [["path", {"d": "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"}], ["path", {"d": "M14 2v4a2 2 0 0 0 2 2h4"}], ["path", {"d": "M10 9H8"}], ["path", {"d": "M16 13H8"}], ["path", {"d": "M16 17H8"}]], "printer": [["path", {"d": "M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"}], ["path", {"d": "M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"}], ["rect", {"x": "6", "y": "14", "width": "12", "height": "8", "rx": "1"}]]};
+const ICONS={"copy": [["rect", {"width": "14", "height": "14", "x": "8", "y": "8", "rx": "2", "ry": "2"}], ["path", {"d": "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"}]], "download": [["path", {"d": "M12 15V3"}], ["path", {"d": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}], ["path", {"d": "m7 10 5 5 5-5"}]], "file-spreadsheet": [["path", {"d": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}], ["path", {"d": "M14 2v5a1 1 0 0 0 1 1h5"}], ["path", {"d": "M8 13h2"}], ["path", {"d": "M14 13h2"}], ["path", {"d": "M8 17h2"}], ["path", {"d": "M14 17h2"}]], "file-up": [["path", {"d": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}], ["path", {"d": "M14 2v5a1 1 0 0 0 1 1h5"}], ["path", {"d": "M12 12v6"}], ["path", {"d": "m15 15-3-3-3 3"}]], "menu": [["path", {"d": "M4 5h16"}], ["path", {"d": "M4 12h16"}], ["path", {"d": "M4 19h16"}]], "refresh-cw": [["path", {"d": "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"}], ["path", {"d": "M21 3v5h-5"}], ["path", {"d": "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"}], ["path", {"d": "M8 16H3v5"}]], "rotate-ccw": [["path", {"d": "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"}], ["path", {"d": "M3 3v5h5"}]], "search": [["path", {"d": "m21 21-4.34-4.34"}], ["circle", {"cx": "11", "cy": "11", "r": "8"}]], "settings": [["path", {"d": "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"}], ["circle", {"cx": "12", "cy": "12", "r": "3"}]], "x": [["path", {"d": "M18 6 6 18"}], ["path", {"d": "m6 6 12 12"}]], "calendar-clock": [["path", {"d": "M16 14v2.2l1.6 1"}], ["path", {"d": "M16 2v3"}], ["path", {"d": "M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"}], ["path", {"d": "M3 9h5.859"}], ["path", {"d": "M8 2v3"}], ["circle", {"cx": "16", "cy": "16", "r": "6"}]], "chevron-left": [["path", {"d": "m15 18-6-6 6-6"}]], "chevron-right": [["path", {"d": "m9 18 6-6-6-6"}]], "eye": [["path", {"d": "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"}], ["circle", {"cx": "12", "cy": "12", "r": "3"}]], "pencil": [["path", {"d": "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"}], ["path", {"d": "m15 5 4 4"}]], "upload": [["path", {"d": "M12 3v12"}], ["path", {"d": "m17 8-5-5-5 5"}], ["path", {"d": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}]], "layout-dashboard": [["rect", {"width": "7", "height": "9", "x": "3", "y": "3", "rx": "1"}], ["rect", {"width": "7", "height": "5", "x": "14", "y": "3", "rx": "1"}], ["rect", {"width": "7", "height": "9", "x": "14", "y": "12", "rx": "1"}], ["rect", {"width": "7", "height": "5", "x": "3", "y": "16", "rx": "1"}]], "search-check": [["path", {"d": "m8 11 2 2 4-4"}], ["circle", {"cx": "11", "cy": "11", "r": "8"}], ["path", {"d": "m21 21-4.3-4.3"}]], "clipboard-list": [["rect", {"width": "8", "height": "4", "x": "8", "y": "2", "rx": "1", "ry": "1"}], ["path", {"d": "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"}], ["path", {"d": "M12 11h4"}], ["path", {"d": "M12 16h4"}], ["path", {"d": "M8 11h.01"}], ["path", {"d": "M8 16h.01"}]], "users": [["path", {"d": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"}], ["path", {"d": "M16 3.128a4 4 0 0 1 0 7.744"}], ["path", {"d": "M22 21v-2a4 4 0 0 0-3-3.87"}], ["circle", {"cx": "9", "cy": "7", "r": "4"}]], "layers": [["path", {"d": "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"}], ["path", {"d": "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"}], ["path", {"d": "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"}]], "circle-check": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "m16 9-5.5 5.5L8 12"}]], "hourglass": [["path", {"d": "M5 22h14"}], ["path", {"d": "M5 2h14"}], ["path", {"d": "M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"}], ["path", {"d": "M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"}]], "ban": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "M4.929 4.929 19.07 19.071"}]], "triangle-alert": [["path", {"d": "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"}], ["path", {"d": "M12 9v4"}], ["path", {"d": "M12 17h.01"}]], "shield-check": [["path", {"d": "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"}], ["path", {"d": "m9 12 2 2 4-4"}]], "timer": [["line", {"x1": "10", "x2": "14", "y1": "2", "y2": "2"}], ["line", {"x1": "12", "x2": "15", "y1": "14", "y2": "11"}], ["circle", {"cx": "12", "cy": "14", "r": "8"}]], "trophy": [["path", {"d": "M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"}], ["path", {"d": "M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"}], ["path", {"d": "M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"}], ["path", {"d": "M4 22h16"}], ["path", {"d": "M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"}], ["path", {"d": "M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"}]], "award": [["path", {"d": "m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"}], ["circle", {"cx": "12", "cy": "8", "r": "6"}]], "activity": [["path", {"d": "M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"}]], "target": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["circle", {"cx": "12", "cy": "12", "r": "6"}], ["circle", {"cx": "12", "cy": "12", "r": "2"}]], "calendar-check": [["path", {"d": "M8 2v3"}], ["path", {"d": "M16 2v3"}], ["rect", {"x": "3", "y": "3", "width": "18", "height": "18", "rx": "2"}], ["path", {"d": "M3 9h18"}], ["path", {"d": "m9 15 2 2 4-4"}]], "trending-up": [["path", {"d": "M16 7h6v6"}], ["path", {"d": "m22 7-8.5 8.5-5-5L2 17"}]], "list-checks": [["path", {"d": "M13 5h8"}], ["path", {"d": "M13 12h8"}], ["path", {"d": "M13 19h8"}], ["path", {"d": "m3 17 2 2 4-4"}], ["path", {"d": "m3 7 2 2 4-4"}]], "sun": [["circle", {"cx": "12", "cy": "12", "r": "4"}], ["path", {"d": "M12 2v2"}], ["path", {"d": "M12 20v2"}], ["path", {"d": "m4.93 4.93 1.41 1.41"}], ["path", {"d": "m17.66 17.66 1.41 1.41"}], ["path", {"d": "M2 12h2"}], ["path", {"d": "M20 12h2"}], ["path", {"d": "m6.34 17.66-1.41 1.41"}], ["path", {"d": "m19.07 4.93-1.41 1.41"}]], "moon": [["path", {"d": "M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"}]], "trash-2": [["path", {"d": "M10 11v6"}], ["path", {"d": "M14 11v6"}], ["path", {"d": "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"}], ["path", {"d": "M3 6h18"}], ["path", {"d": "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"}]], "save": [["path", {"d": "M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"}], ["path", {"d": "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"}], ["path", {"d": "M7 3v4a1 1 0 0 0 1 1h7"}]], "bell": [["path", {"d": "M10.268 21a2 2 0 0 0 3.464 0"}], ["path", {"d": "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"}]], "bell-ring": [["path", {"d": "M10.268 21a2 2 0 0 0 3.464 0"}], ["path", {"d": "M22 8c0-2.3-.8-4.3-2-6"}], ["path", {"d": "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"}], ["path", {"d": "M4 2C2.8 3.7 2 5.7 2 8"}]], "clock": [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "M12 6v6l4 2"}]], "package-plus": [["path", {"d": "M12 22V12"}], ["path", {"d": "M16 17h6"}], ["path", {"d": "M19 14v6"}], ["path", {"d": "M21 10.535V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.729l7 4a2 2 0 0 0 2 .001l1.675-.955"}], ["path", {"d": "M3.29 7 12 12l8.71-5"}], ["path", {"d": "m7.5 4.27 8.997 5.148"}]], "list-filter": [["path", {"d": "M3 6h18"}], ["path", {"d": "M7 12h10"}], ["path", {"d": "M10 18h4"}]], "send": [["path", {"d": "M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"}], ["path", {"d": "m21.854 2.147-10.94 10.939"}]], "image": [["rect", {"width": "18", "height": "18", "x": "3", "y": "3", "rx": "2", "ry": "2"}], ["circle", {"cx": "9", "cy": "9", "r": "2"}], ["path", {"d": "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"}]], "clipboard-copy": [["rect", {"width": "8", "height": "4", "x": "8", "y": "2", "rx": "1", "ry": "1"}], ["path", {"d": "M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"}], ["path", {"d": "M16 4h2a2 2 0 0 1 2 2v4"}], ["path", {"d": "M21 14H11"}], ["path", {"d": "m15 10-4 4 4 4"}]], "file-text": [["path", {"d": "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"}], ["path", {"d": "M14 2v4a2 2 0 0 0 2 2h4"}], ["path", {"d": "M10 9H8"}], ["path", {"d": "M16 13H8"}], ["path", {"d": "M16 17H8"}]], "printer": [["path", {"d": "M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"}], ["path", {"d": "M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"}], ["rect", {"x": "6", "y": "14", "width": "12", "height": "8", "rx": "1"}]], "unplug": [["path", {"d": "m19 5 3-3"}], ["path", {"d": "m2 22 3-3"}], ["path", {"d": "M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"}], ["path", {"d": "M7.5 13.5 10 11"}], ["path", {"d": "M10.5 16.5 13 14"}], ["path", {"d": "m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z"}]]};
 function svgIcon(n,cls){ const d=ICONS[n]; if(!d) return ''; return `<svg xmlns="http://www.w3.org/2000/svg" class="lucide${cls?' '+cls:''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d.map(([t,a])=>`<${t} ${Object.entries(a).map(([k,v])=>`${k}="${v}"`).join(' ')}/>`).join('')}</svg>`; }
 function refreshIcons(){ document.querySelectorAll('i[data-lucide]').forEach(i=>{ const s=svgIcon(i.getAttribute('data-lucide'),i.getAttribute('class')||''); if(s) i.outerHTML=s; }); }
 function colLetter(i){ let s=''; i=i+1; while(i>0){ const m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26);} return s; }
@@ -1041,14 +1042,46 @@ function loadSavedMapping(){
    LOAD DATA
    ============================================================ */
 function handleParsed(rows){
-  const data=rows.filter(r=>r.some(c=>String(c||'').trim()!==''));
+  let data=rows.filter(r=>r.some(c=>String(c||'').trim()!==''));
   if(data.length<2) throw new Error('Data pada Spreadsheet kosong atau tidak terbaca.');
   if(/^\s*<(!doctype|html)/i.test(String(data[0][0]))) throw new Error('Google Sheets mengembalikan halaman HTML, bukan CSV. Periksa pengaturan Publish to web.');
+  BASE_DATA=data; data=applyLive(data);
   HEADERS=data[0].map(h=>String(h||'').trim()); RAW=data.slice(1);
   const key=HEADERS.join('|');
   if(key!==MAP_KEY||!Object.keys(COLMAP).length){ MAP_KEY=key; detectColumns(); loadSavedMapping(); }
   processRows();
 }
+
+/* ============================================================
+   SINKRON LIVE: baris LogLive (WO open + batal + 3 hari terakhir) menimpa baris Sheet berdasarkan ID WO
+   ============================================================ */
+let BASE_DATA=null, LIVE=null, LIVE_VER='', LIVE_BUSY=false;
+const ID_RE=/^(work\s*order|wo)\s*(id|no|number|nomor)|nomor\s*wo|ticket\s*(id|no)/i;
+function applyLive(data){
+  if(!LIVE||!LIVE.rows||!LIVE.rows.length) return data;
+  const H=data[0].map(h=>String(h||'').trim());
+  let iId=H.findIndex(h=>ID_RE.test(h)||FIELD_ALIASES.id_wo.includes(norm(h)));
+  if(iId<0) return data;
+  const li=new Map(LIVE.cols.map((c,i)=>[String(c).trim(),i]));
+  if(!li.has(H[iId])) return data;
+  const map=H.map(h=>li.has(h)?li.get(h):-1), idx=new Map();
+  for(let i=1;i<data.length;i++) idx.set(String(data[i][iId]==null?'':data[i][iId]).trim(),i);
+  const out=data.slice();
+  LIVE.rows.forEach(lr=>{ const row=map.map(m=>m<0?'':lr[m]); const k=String(row[iId]).trim(); const p=idx.get(k); if(p!=null) out[p]=row; else { idx.set(k,out.length); out.push(row); } });
+  return out;
+}
+async function fetchLive(){
+  if(!MB_PROXY||LIVE_BUSY) return; LIVE_BUSY=true;
+  try{
+    const j=JSON.parse(await fetchTimeout(MB_PROXY+'?mode=live&ver='+encodeURIComponent(LIVE_VER)+'&_='+Date.now(),45000));
+    if(j&&j.ok&&!j.same&&j.cols&&j.cols.length){
+      LIVE={cols:j.cols,rows:j.rows}; LIVE_VER=j.ver;
+      if(BASE_DATA){ handleParsed(BASE_DATA); $('updateText').textContent=fmtDT(new Date())+' · live'; }
+    }
+  }catch(e){ console.warn('live:',e&&e.message); }
+  LIVE_BUSY=false;
+}
+setInterval(()=>{ if(!document.hidden) fetchLive(); },60*1000);
 let LAST_OK=null;
 function fmtDT(d){ return fmtDate(d)+' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' WIB'; }
 function setStatus(ok){
@@ -1062,10 +1095,11 @@ let CSV_OVR=''; try{ CSV_OVR=''; localStorage.removeItem('starlite_csv'); }catch
 function csvUrls(){ const L=[]; if(CSV_OVR){ L.push(CSV_OVR, CSV_OVR+(CSV_OVR.includes('?')?'&':'?')+'_=__T__'); } return L.concat(CSV_URLS_BASE); }
 const CSV_URLS_BASE=[CSV_URL, CSV_URL+'&_=__T__', "https://docs.google.com/spreadsheets/d/1Ki9oR-ODT7unF35LXDKR5fRFKxWSe87ckTVZLyzMz9M/gviz/tq?tqx=out:csv&gid=585283091"];
 const FETCH_TIMEOUT=12000;
-function fetchTimeout(u){
+function fetchTimeout(u,ms){
+  const LIM=ms||FETCH_TIMEOUT;
   return new Promise((ok,no)=>{
     const ac=(typeof AbortController!=='undefined')?new AbortController():null;
-    const t=setTimeout(()=>{ try{ac&&ac.abort();}catch(e){} no(new Error('waktu habis (>'+FETCH_TIMEOUT/1000+' dtk)')); },FETCH_TIMEOUT);
+    const t=setTimeout(()=>{ try{ac&&ac.abort();}catch(e){} no(new Error('waktu habis (>'+LIM/1000+' dtk)')); },LIM);
     fetch(u,{cache:'no-store',signal:ac?ac.signal:undefined}).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
       .then(x=>{ clearTimeout(t); ok(x); },e=>{ clearTimeout(t); no(e); });
   });
@@ -1103,12 +1137,12 @@ function loadData(showLoader,manual){
   const wd=setTimeout(()=>fail(new Error('proses terlalu lama')),90000);
   fetchCsv().then(async txt=>{
     if(finished) return; LAST_FETCH=Date.now();
-    if(txt===LAST_TXT&&HAS_DATA){ clearErr(); setStatus(true); fetchMb(); if(manual) toast('Data sudah terbaru'); done(); return; }
+    if(txt===LAST_TXT&&HAS_DATA){ clearErr(); setStatus(true); fetchMb(); fetchLive(); if(manual) toast('Data sudah terbaru'); done(); return; }
     const vis=showLoader&&!HAS_DATA, tick=()=>new Promise(r=>setTimeout(r,40));
     if(vis){ ldStage('Data diterima · membaca tabel',86); await tick(); }
     const res=Papa.parse(txt,{skipEmptyLines:true});
     if(vis){ ldStage('Memproses '+nf(res.data.length-1)+' baris WO',93); await tick(); }
-    clearErr(); handleParsed(res.data); restoreScroll(); HAS_DATA=true; LAST_TXT=txt; setStatus(true); cacheSet(txt); if(manual) toast('Data diperbarui'); done(); fetchMb();
+    clearErr(); handleParsed(res.data); restoreScroll(); HAS_DATA=true; LAST_TXT=txt; setStatus(true); cacheSet(txt); if(manual) toast('Data diperbarui'); done(); fetchMb(); fetchLive();
   }).catch(fail);
 }
 
@@ -1149,7 +1183,7 @@ const MB_BASE='https://surge-dashboard.codifytechnology.com/api/public/dashboard
 const MB_CARDS={total:'642/card/496',status:'646/card/500',over:'645/card/499'};
 const MB_PROXY_DEFAULT='https://script.google.com/macros/s/AKfycbyBYmFbRjWTFmwts83bl8wMtY8Gk0LOIp64oBn3c_m71MhwIH05nLqBK4LAdv8O1nGU/exec';
 let MB={data:null,err:'',ts:null,busy:false}, MB_TIKET='', MB_PROXY='', USE_MB=true;
-try{ const t=localStorage.getItem('starlite_mbt2'); if(t!==null) MB_TIKET=t; MB_PROXY=MB_PROXY_DEFAULT; if(localStorage.getItem('starlite_mbproxy')&&localStorage.getItem('starlite_mbproxy')!==MB_PROXY_DEFAULT&&!/AKfycbyWSGN/.test(localStorage.getItem('starlite_mbproxy'))) MB_PROXY=localStorage.getItem('starlite_mbproxy'); const u=localStorage.getItem('starlite_usemb'); if(u!==null) USE_MB=u==='1'; }catch(e){}
+try{ const t=localStorage.getItem('starlite_mbt2'); if(t!==null) MB_TIKET=t; MB_PROXY=MB_PROXY_DEFAULT; try{ const c=JSON.parse(localStorage.getItem('starlite_mbcache')||'null'); if(c&&c.data&&Date.now()-c.ts<6*3600000){ MB.data=c.data; MB.ts=new Date(c.ts); } }catch(e2){} if(localStorage.getItem('starlite_mbproxy')&&localStorage.getItem('starlite_mbproxy')!==MB_PROXY_DEFAULT&&!/AKfycbyWSGN/.test(localStorage.getItem('starlite_mbproxy'))) MB_PROXY=localStorage.getItem('starlite_mbproxy'); const u=localStorage.getItem('starlite_usemb'); if(u!==null) USE_MB=u==='1'; }catch(e){}
 function mbKat(){ return SCOPE.kat===null?['Pengecekan (Visit)','Penggantian ONT (Replace ONT)','Task Lainnya']:SCOPE.kat; }
 function mbParams(){
   const f=(id,name,bt,type,val)=>({type,value:val,id,target:['dimension',['field',name,{'base-type':bt}],{'stage-number':0}]});
@@ -1164,7 +1198,7 @@ function mbShape(out){
   return {total:tot,close:cl,cancel:cx,open:Math.max(0,tot-cl-cx),over:Number(out.over&&out.over[0]&&out.over[0][0]||0),byStatus:st};
 }
 async function fetchMb(){
-  if(MB.busy) return; MB.busy=true; renderMb();
+  if(MB.busy) return; MB.busy=true; if(!MB.data) renderMb();
   try{
     let out;
     if(MB_PROXY){
@@ -1174,7 +1208,9 @@ async function fetchMb(){
       out={}; const q='?parameters='+mbParams();
       for(const k of Object.keys(MB_CARDS)){ const j=JSON.parse(await fetchTimeout(MB_BASE+MB_CARDS[k]+q)); if(!j||!j.data||!j.data.rows) throw new Error('respons tidak dikenal'); out[k]=j.data.rows; }
     }
-    MB.data=mbShape(out); MB.err=''; MB.ts=new Date();
+    const nd=mbShape(out), same=MB.data&&JSON.stringify(nd)===JSON.stringify(MB.data); MB.data=nd; MB.err=''; MB.ts=new Date();
+    try{ localStorage.setItem('starlite_mbcache',JSON.stringify({data:nd,ts:Date.now()})); }catch(e3){}
+    if(same){ MB.busy=false; renderMb(); return; }
   }catch(e){ MB.err=String(e&&e.message||e); if(!MB.data||!MB.ts||Date.now()-MB.ts>30*60000) MB.data=null; }
   MB.busy=false; renderMb();
   if(VIEW==='dashboard'){ try{ renderKpi(); renderStatus(); renderHero(); refreshIcons(); }catch(e){ console.error(e); } }
@@ -1276,6 +1312,89 @@ function renderWeekly(){
   $q('wkCsv').addEventListener('click',()=>{ if(!WK_MITRA.length) return toast('Tidak ada data'); download(new Blob(['\ufeff'+Papa.unparse(WK_MITRA.map(m=>({Mitra:m.name,'Jumlah WO closed':m.n,'SLA rata-rata (jam)':m.sla==null?'':+m.sla.toFixed(1),'Assign time (jam)':m.as==null?'':+m.as.toFixed(1),'Troubleshooting (jam)':m.ts==null?'':+m.ts.toFixed(1)})))],{type:'text/csv;charset=utf-8;'}),`Summary_Weekly_CS_${WK.from}_${WK.to}.csv`); toast('CSV diunduh'); });
 }
 
+/* ============================================================
+   MONITORING WO DISMANTLE (kategori "Pengambilan ONT (Dismantle)", dibaca lewat proxy dari sheet LogDismantle)
+   ============================================================ */
+const DSM={ver:'',items:[],ts:null,err:'',busy:false,q:'',mitra:'',stasiun:'',st:'OPEN',sort:'umur',lim:100};
+(function(){ const v=document.createElement('div'); v.className='view'; v.id='v-dismantle'; $('v-kpi').parentNode.appendChild(v); })();
+const DSM_COLS={ id:['workorderid','woid','idwo','wonumber','workordernumber','nomorwo','noticket','ticketid','workorder','wo'], created:['workordercreatedat'], status:['statuscategory'], mitra:['partnername','namapartner'], stasiun:['stationname','stasiun'], region:['region'], cust:['customerid','idpelanggan'], nama:['customername','namapelanggan'], ikrp:['ikrpartnername'], sla:['statussla'], comp:['visitcompletedtime'], tipe:['tipeworkorder'] };
+function dsmBuild(cols,rows){
+  const nh=cols.map(norm), ix={}; Object.keys(DSM_COLS).forEach(f=>{ for(const a of DSM_COLS[f]){ const i=nh.indexOf(a); if(i>-1){ ix[f]=i; break; } } });
+  if(ix.id==null){ const i=cols.findIndex(h=>ID_RE.test(h)); if(i>-1) ix.id=i; }
+  const g=(r,f)=>ix[f]==null?'':String(r[ix[f]]==null?'':r[ix[f]]).trim(), today=new Date(); today.setHours(0,0,0,0);
+  return rows.map((r,i)=>{ const statusRaw=g(r,'status'), st=statusKey(statusRaw), cr=parseDT(g(r,'created')), comp=parseDT(g(r,'comp')), open=!['SELESAI','CANCEL'].includes(st), tgl=cr?new Date(cr.getFullYear(),cr.getMonth(),cr.getDate()):null;
+    return { id:g(r,'id')||('ROW-'+(i+2)), statusRaw, st, open, created:cr, comp, tgl, umur:(open&&tgl)?Math.max(0,Math.floor((today-tgl)/86400000)):null, mitra:g(r,'mitra')||'(Tanpa Mitra)', stasiun:g(r,'stasiun')||g(r,'region')||'(Tanpa Stasiun)', region:g(r,'region'), cust:g(r,'cust'), nama:g(r,'nama'), ikrp:g(r,'ikrp'), sla:slaKey(g(r,'sla')), slaRaw:g(r,'sla') }; });
+}
+async function fetchDsm(){
+  if(!MB_PROXY){ DSM.err='URL Apps Script proxy belum diisi'; if(VIEW==='dismantle') renderDismantle(); return; }
+  if(DSM.busy) return; DSM.busy=true;
+  try{
+    const j=JSON.parse(await fetchTimeout(MB_PROXY+'?mode=dismantle&ver='+encodeURIComponent(DSM.ver)+'&_='+Date.now(),45000));
+    if(!j||j.ok===false) throw new Error(j&&j.error||'proxy gagal');
+    if(!j.same){ DSM.items=dsmBuild(j.cols||[],j.rows||[]); DSM.ver=j.ver; }
+    DSM.ts=new Date(); DSM.upd=j.ts?new Date(j.ts):null; DSM.err='';
+  }catch(e){ DSM.err=String(e&&e.message||e)||'tidak ada jawaban / waktu habis'; }
+  DSM.busy=false; if(VIEW==='dismantle') renderDismantle();
+}
+setInterval(()=>{ if(!document.hidden&&VIEW==='dismantle') fetchDsm(); },60*1000);
+const DSM_ST={SELESAI:['CLOSE','b-green'],CANCEL:['CANCEL','b-red']};
+function dsmFiltered(){
+  const q=DSM.q.toLowerCase();
+  let a=DSM.items.filter(r=>(DSM.st==='ALL'||(DSM.st==='OPEN'&&r.open)||(DSM.st==='SELESAI'&&r.st==='SELESAI')||(DSM.st==='CANCEL'&&r.st==='CANCEL'))&&(!DSM.mitra||r.mitra===DSM.mitra)&&(!DSM.stasiun||r.stasiun===DSM.stasiun)&&(!q||[r.id,r.cust,r.nama,r.ikrp,r.mitra].some(v=>String(v).toLowerCase().includes(q))));
+  const so={umur:(x,y)=>(y.umur||0)-(x.umur||0),mitra:(x,y)=>x.mitra.localeCompare(y.mitra)||(y.umur||0)-(x.umur||0),tgl:(x,y)=>(y.created?+y.created:0)-(x.created?+x.created:0)}[DSM.sort];
+  return a.sort(so);
+}
+function dsmMsg(name,rows){ return ikrMsg({title:'ESKALASI WO DISMANTLE',name,unit:'WO Dismantle',rows,urgent:rows.filter(r=>r.sla==='OVER').length,tail:'Mohon dibantu percepatan pengambilan ONT (dismantle) dan Closed WO di aplikasi IKR. Terima kasih.'}); }
+function renderDismantle(){
+  const root=$('v-dismantle'), A=DSM.items;
+  if(!A.length){
+    root.innerHTML=`<div class="card panel"><div class="panel-head"><div><h2>Monitoring WO Dismantle</h2><div class="sub">Kategori Pengambilan ONT (Dismantle) · sumber: Metabase lewat Apps Script</div></div></div>
+      <div class="wk-n" style="text-align:left">${DSM.busy?'Mengambil data WO Dismantle…':(DSM.err?('Belum dapat mengambil data ('+esc(DSM.err)+'). Pastikan Code v4 sudah di-deploy (Versi baru), fungsi <b>mulaiSemua</b> sudah dijalankan, dan URL proxy terisi di pengaturan.'):'Belum ada data WO Dismantle. Jalankan <b>tarikDismantleWO</b> di Apps Script, lalu muat ulang.')} <button class="lnk" id="dsmRetry">coba lagi</button></div></div>`;
+    const b=$('dsmRetry'); if(b) b.onclick=fetchDsm; return; }
+  const open=A.filter(r=>r.open), close=A.filter(r=>r.st==='SELESAI'), cancel=A.filter(r=>r.st==='CANCEL'), over=open.filter(r=>r.sla==='OVER'), avgAge=open.length?open.reduce((s,r)=>s+(r.umur||0),0)/open.length:0;
+  const mitras=uniqSorted(A.map(r=>r.mitra)), stns=uniqSorted(A.filter(r=>!DSM.mitra||r.mitra===DSM.mitra).map(r=>r.stasiun));
+  const F=dsmFiltered(), shown=F.slice(0,DSM.lim);
+  const opt=(arr,cur,all)=>`<option value="">${all}</option>`+arr.map(v=>`<option value="${esc(v)}"${v===cur?' selected':''}>${esc(v)}</option>`).join('');
+  const byM={}; open.forEach(r=>{ const m=byM[r.mitra]=byM[r.mitra]||{n:0,o:0,rows:[]}; m.n++; if(r.sla==='OVER') m.o++; m.rows.push(r); });
+  const mList=Object.keys(byM).sort((a,b)=>byM[b].n-byM[a].n||a.localeCompare(b));
+  root.innerHTML=`<div class="wk-cards" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+    <div class="wk-c"><div class="l">Total WO Dismantle</div><div class="v">${nf(A.length)}</div><div class="u">sejak 1 Mei 2026</div></div>
+    <div class="wk-c"><div class="l">WO Open</div><div class="v">${nf(open.length)}</div><div class="u">${pct(open.length,A.length)} dari total</div></div>
+    <div class="wk-c"><div class="l">WO Close</div><div class="v">${nf(close.length)}</div><div class="u">${pct(close.length,A.length)}</div></div>
+    <div class="wk-c"><div class="l">Open Over SLA</div><div class="v">${nf(over.length)}</div><div class="u">rata-rata umur open ${avgAge.toFixed(1).replace('.',',')} hari</div></div></div>
+   <div class="count" style="margin:8px 2px">Data sheet LogDismantle diperbarui ${DSM.upd?fmtDT(DSM.upd):'-'} · cek ulang tiap 1 menit${DSM.err?' · <span style="color:var(--red-ink)">gagal memperbarui: '+esc(DSM.err)+'</span>':''} · Cancel: ${nf(cancel.length)}</div>
+   <div class="two sec" style="margin-top:12px"><div class="card panel"><div class="panel-head"><div><h2>Komposisi Status</h2></div></div><div style="position:relative;height:250px"><canvas id="chDsmSt"></canvas></div></div>
+    <div class="card panel"><div class="panel-head"><div><h2>WO Open per Mitra</h2><div class="sub">Top 12 · merah = Over SLA</div></div></div><div style="position:relative;height:${Math.max(250,Math.min(12,mList.length)*26+70)}px"><canvas id="chDsmM"></canvas></div></div></div>
+   <div class="two sec" style="margin-top:12px"><div class="card panel"><div class="panel-head"><div><h2>WO Open per Stasiun</h2><div class="sub">Top 12</div></div></div><div style="position:relative;height:320px"><canvas id="chDsmStn"></canvas></div></div>
+    <div class="card panel"><div class="panel-head"><div><h2>Tren 30 Hari</h2><div class="sub">WO dibuat vs WO selesai per hari</div></div></div><div style="position:relative;height:320px"><canvas id="chDsmDay"></canvas></div></div></div>
+   <div class="card panel sec" style="margin-top:12px"><div class="panel-head"><div><h2>Daftar WO Dismantle</h2><div class="sub">${nf(F.length)} WO sesuai filter</div></div><div class="wk-tools"><button class="btn btn-sm" id="dsmCsv">${ic('download')}CSV</button></div></div>
+    <div class="wk-bar" style="box-shadow:none;margin-bottom:10px"><div class="fld"><label for="dsmQ">Cari</label><input type="search" id="dsmQ" value="${esc(DSM.q)}" placeholder="ID pelanggan / nama / IKR"></div>
+     <div class="fld"><label for="dsmSt">Status</label><select id="dsmStSel">${[['OPEN','Open'],['SELESAI','Close'],['CANCEL','Cancel'],['ALL','Semua']].map(([k,l])=>`<option value="${k}"${DSM.st===k?' selected':''}>${l}</option>`).join('')}</select></div>
+     <div class="fld"><label for="dsmM">Mitra</label><select id="dsmMSel">${opt(mitras,DSM.mitra,'Semua mitra')}</select></div>
+     <div class="fld"><label for="dsmS">Stasiun</label><select id="dsmSSel">${opt(stns,DSM.stasiun,'Semua stasiun')}</select></div>
+     <div class="fld"><label for="dsmSo">Urutkan</label><select id="dsmSoSel">${[['umur','Umur terlama'],['mitra','Mitra'],['tgl','Terbaru dibuat']].map(([k,l])=>`<option value="${k}"${DSM.sort===k?' selected':''}>${l}</option>`).join('')}</select></div></div>
+    <div class="rtable-wrap tall-wrap" style="max-height:560px"><table class="wk-t"><thead><tr><th>Mitra</th><th>Stasiun</th><th>ID Pelanggan</th><th>Nama</th><th>IKR Partner</th><th>Status</th><th>Umur</th><th>SLA</th><th>Dibuat</th></tr></thead><tbody>${shown.map(r=>`<tr><td class="l">${esc(r.mitra)}</td><td class="l">${esc(r.stasiun)}</td><td>${esc(r.cust||r.id)}</td><td class="l">${esc(r.nama||'-')}</td><td class="l">${esc(r.ikrp||'-')}</td><td>${esc(r.statusRaw||'-')}</td><td>${r.umur==null?'–':r.umur+' hr'}</td><td>${r.sla==='OVER'?'<span class="b b-over">Over</span>':(r.sla==='OK'?'<span class="b b-ok">OK</span>':'–')}</td><td>${r.created?fmtDate(r.created):'-'}</td></tr>`).join('')||'<tr><td colspan="9">Tidak ada data</td></tr>'}</tbody></table></div>
+    ${F.length>DSM.lim?`<div style="text-align:center;margin:10px"><button class="btn" id="dsmMore">Tampilkan lebih banyak (${nf(F.length-DSM.lim)})</button></div>`:''}</div>
+   <div class="card panel sec" style="margin-top:12px"><div class="panel-head"><div><h2>Follow Up Mitra — WO Dismantle Open</h2><div class="sub">Pesan dikelompokkan per stasiun lalu per IKR Partner</div></div></div>
+    <div id="dsmFu">${mList.map(n=>`<div class="fu-row" style="display:flex;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:0"><b>${esc(n)}</b><div class="count">${nf(byM[n].n)} WO Open · ${nf(byM[n].o)} Over SLA</div></div><button class="btn btn-sm btn-primary" data-dm="${esc(n)}">${ic('clipboard-copy')}Copy Pesan</button></div>`).join('')||'<div class="empty">Tidak ada WO Dismantle open.</div>'}</div></div>`;
+  const $q=id=>root.querySelector('#'+id), bind=(id,k,ev)=>{ const e=$q(id); if(e) e.addEventListener(ev||'change',()=>{ DSM[k]=e.value; if(k==='mitra') DSM.stasiun=''; DSM.lim=100; renderDismantle(); refreshIcons(); }); };
+  bind('dsmStSel','st'); bind('dsmMSel','mitra'); bind('dsmSSel','stasiun'); bind('dsmSoSel','sort');
+  const qi=$q('dsmQ'); if(qi) qi.addEventListener('input',debounce(()=>{ DSM.q=qi.value.trim(); DSM.lim=100; renderDismantle(); refreshIcons(); const f=$q('dsmQ'); f.focus(); f.setSelectionRange(f.value.length,f.value.length); },300));
+  const mo=$q('dsmMore'); if(mo) mo.addEventListener('click',()=>{ DSM.lim+=200; renderDismantle(); refreshIcons(); });
+  $q('dsmCsv').addEventListener('click',()=>{ if(!F.length) return toast('Tidak ada data'); download(new Blob(['﻿'+Papa.unparse(F.map(r=>({Mitra:r.mitra,Stasiun:r.stasiun,'ID Pelanggan':r.cust||r.id,'Nama Pelanggan':r.nama,'IKR Partner':r.ikrp,Status:r.statusRaw,'Umur (hari)':r.umur==null?'':r.umur,SLA:r.sla==='OVER'?'Over':'',Dibuat:r.created?fmtDT(r.created):''})))],{type:'text/csv;charset=utf-8;'}),'WO_Dismantle_'+stamp()+'.csv'); toast('CSV diunduh'); });
+  root.querySelectorAll('button[data-dm]').forEach(b=>b.addEventListener('click',()=>{ const n=b.dataset.dm, t=dsmMsg(n,byM[n].rows.slice().sort((x,y)=>(x.stasiun||'').localeCompare(y.stasiun||'')||(y.umur||0)-(x.umur||0))); $('fuTitle').textContent='Push Eskalasi — '+n; $('fuTxt').value=t; $('fuOv').classList.add('show'); copyText(t,false); }));
+  // grafik
+  if(!chartBase()) return; ['dsmSt','dsmM','dsmStn','dsmDay'].forEach(destroy);
+  const mt=mList.slice(0,12);
+  charts.dsmSt=new Chart($('chDsmSt'),{type:'doughnut',data:{labels:['WO Open','WO Close','WO Cancel'],datasets:[{data:[open.length,close.length,cancel.length],backgroundColor:[C_OPEN,C_CLOSE,C_CANCEL],borderWidth:2,borderColor:isDark()?'#111C30':'#fff',hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom'}}}});
+  charts.dsmM=new Chart($('chDsmM'),{type:'bar',data:{labels:mt,datasets:[{label:'Open (belum Over SLA)',data:mt.map(k=>byM[k].n-byM[k].o),backgroundColor:C_OPEN,stack:'s'},{label:'Open Over SLA',data:mt.map(k=>byM[k].o),backgroundColor:C_CANCEL,stack:'s'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:isMob()?30:50}},plugins:{totalLabels:{on:true},legend:{position:'top'}},scales:{x:{stacked:true,beginAtZero:true,grid:{color:GRID},ticks:{precision:0}},y:{stacked:true,grid:{display:false},ticks:{autoSkip:false,callback(v){ return shortLbl(this.getLabelForValue(v),isMob()?18:30); }}}}}});
+  const bs={}; open.forEach(r=>{ bs[r.stasiun]=(bs[r.stasiun]||0)+1; }); const sk=Object.keys(bs).sort((a,b)=>bs[b]-bs[a]).slice(0,12);
+  charts.dsmStn=new Chart($('chDsmStn'),{type:'bar',data:{labels:sk,datasets:[{label:'WO Open',data:sk.map(k=>bs[k]),backgroundColor:'#7C3AED'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:isMob()?30:44}},plugins:{totalLabels:{on:true},legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:GRID},ticks:{precision:0}},y:{grid:{display:false},ticks:{autoSkip:false,callback(v){ return shortLbl(this.getLabelForValue(v),isMob()?16:26); }}}}}});
+  const days=[]; const t0=new Date(); t0.setHours(0,0,0,0); for(let i=29;i>=0;i--){ const d=new Date(t0); d.setDate(d.getDate()-i); days.push(dayKey(d)); }
+  const cr={},cl={}; A.forEach(r=>{ if(r.tgl){ const k=dayKey(r.tgl); cr[k]=(cr[k]||0)+1; } if(r.st==='SELESAI'&&r.comp){ const k=dayKey(r.comp); cl[k]=(cl[k]||0)+1; } });
+  charts.dsmDay=new Chart($('chDsmDay'),{type:'line',data:{labels:days.map(k=>k.slice(8)+'/'+k.slice(5,7)),datasets:[{label:'Dibuat',data:days.map(k=>cr[k]||0),borderColor:C_OPEN,backgroundColor:hexA(C_OPEN,.12),fill:true,tension:.35,pointRadius:2},{label:'Selesai',data:days.map(k=>cl[k]||0),borderColor:C_CLOSE,backgroundColor:hexA(C_CLOSE,.12),fill:true,tension:.35,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom'}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:isMob()?8:15}},y:{beginAtZero:true,grid:{color:GRID},ticks:{precision:0}}}}});
+}
+
 /* ---------- Follow Up Mitra ---------- */
 const FU={q:'',sort:'open',onlyUrg:false,detUrg:false,lim:40};
 const FU_COL=['#2556D9','#0EA5E9','#7C3AED','#2FB584','#F59E0B','#EC4899','#14B8A6','#F97316'];
@@ -1287,6 +1406,25 @@ function copyText(t,msg){
   const fb=()=>{ const ta=$('fuTxt'); if(ta){ ta.focus(); ta.select(); } try{ document.execCommand('copy'); if(msg) toast('Pesan disalin'); }catch(e){ if(msg) toast('Tekan Ctrl+C untuk menyalin'); } };
   if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>{ if(msg) toast('Pesan disalin'); },fb); else fb();
 }
+
+/* ---- Pesan eskalasi dikelompokkan per stasiun lalu per IKR Partner Name ---- */
+const FU_IKR=/tower\s*bersama/i;
+function stnGroups(rows){
+  const names=[...new Set(rows.map(r=>r.stasiun||r.region||'(Tanpa Stasiun)'))].sort((a,b)=>a.localeCompare(b)), grp=[];
+  names.forEach(n=>{ const g=grp.find(x=>n.startsWith(x.names[0]+' ')); if(g) g.names.push(n); else grp.push({names:[n]}); });
+  grp.forEach(g=>{ g.rows=rows.filter(r=>g.names.includes(r.stasiun||r.region||'(Tanpa Stasiun)')); });
+  return grp;
+}
+function ikrMsg(o){
+  const L=[`🚨 *${o.title}* 🚨`,'',`📋 *Ringkasan* :`,`*${o.name}*`,`- ${nf(o.rows.length)} ${o.unit} Open`,`- Urgent (≥ SLA) : ${nf(o.urgent)}`,''];
+  stnGroups(o.rows).forEach(g=>{
+    L.push(`*WO OPEN ${o.short||o.name} STASIUN ${g.names.join(' & ')}* (${nf(g.rows.length)} WO)`);
+    const ik={}; g.rows.forEach(r=>{ const k=r.ikrp||'(IKR Partner tidak tercatat)'; (ik[k]=ik[k]||[]).push(r); });
+    Object.keys(ik).sort((a,b)=>ik[b].length-ik[a].length||a.localeCompare(b)).forEach(k=>L.push(`- ${k} : ${nf(ik[k].length)} WO → ${ik[k].map(r=>r.cust||r.id).join(', ')}`));
+    L.push('');
+  });
+  L.push(o.tail); return L.join('\n');
+}
 function fuGroups(){
   const g={}; ALL_ROWS.filter(isOpen).forEach(r=>{ const m=g[r.mitra]=g[r.mitra]||{name:r.mitra,rows:[],urgent:0,belum:0,reg:new Set()}; m.rows.push(r); if(r.sla==='OVER') m.urgent++; if(['BELUM','JADWAL','DISTRIB'].includes(r.st)) m.belum++; if(r.region) m.reg.add(r.region); });
   const arr=Object.values(g); arr.forEach(m=>m.rows.sort((a,b)=>(a.stasiun||a.region||'').localeCompare(b.stasiun||b.region||'')||(b.umur||0)-(a.umur||0)||String(a.id).localeCompare(String(b.id))));
@@ -1294,6 +1432,7 @@ function fuGroups(){
 }
 function fuMsg(m){
   const rows=FU.detUrg?m.rows.filter(r=>r.sla==='OVER'):m.rows;
+  if(FU_IKR.test(m.name)&&rows.some(r=>r.ikrp)) return ikrMsg({title:'ESKALASI WO VISIT',name:m.name,short:'TBG',unit:'WO Visit',rows,urgent:m.urgent,tail:'Mohon dibantu percepatan kunjungan/visit dan Closed WO di aplikasi IKR. Terima kasih.'});
   return `🚨 *ESKALASI WO VISIT* 🚨\n\n📋 *Ringkasan* :\n*${m.name}*\n- ${nf(m.rows.length)} WO Visit Open\n- Urgent (≥ SLA) : ${nf(m.urgent)}\n\n*Detail per ID pelanggan:*\n`+rows.map(r=>`- ${r.stasiun||r.region||'-'} - ${r.cust||r.id} - ${r.nama||'-'}`).join('\n')+`\n\nMohon dibantu percepatan kunjungan/visit dan Closed WO di aplikasi IKR. Terima kasih.`;
 }
 function renderFollowUp(){
@@ -1338,7 +1477,7 @@ window.addEventListener('pagehide',saveScroll); document.addEventListener('visib
 let SCROLL_DONE=false; function restoreScroll(){ if(SCROLL_DONE) return; SCROLL_DONE=true; try{ const o=JSON.parse(sessionStorage.getItem('sl_scroll')||'null'); if(o&&o.v===VIEW&&o.y>0) setTimeout(()=>window.scrollTo(0,o.y),250); }catch(e){} }
 function startLoad(){
   /* tampilkan data cache dulu (jika ada), lalu ambil data terbaru */
-  cacheGet().then(c=>{ if(c&&c.txt){ try{ const res=Papa.parse(c.txt,{skipEmptyLines:true}); handleParsed(res.data); HAS_DATA=true; LAST_OK=new Date(c.ts); setStatus(true); $('updateText').textContent=fmtDT(new Date(c.ts))+' (cache)'; stopLoadUi(); restoreScroll(); }catch(e){} } }).catch(()=>{}).then(()=>loadData(true));
+  cacheGet().then(c=>{ if(c&&c.txt){ try{ const res=Papa.parse(c.txt,{skipEmptyLines:true}); handleParsed(res.data); HAS_DATA=true; LAST_OK=new Date(c.ts); setStatus(true); $('updateText').textContent=fmtDT(new Date(c.ts))+' (cache)'; stopLoadUi(); restoreScroll(); fetchLive(); }catch(e){} } }).catch(()=>{}).then(()=>loadData(true));
 }
 function loadFile(file){
   if(!file) return;
@@ -1378,7 +1517,7 @@ function processRows(){
       if(tsH==null&&assignH!=null&&dur!=null) tsH=Math.max(0,dur-assignH); }
     const id=g(r,'id_wo')||('ROW-'+(i+2));
     return { _idx:i, id, tglWo, visit, close, rel:relD, comp:compD, stBase:base, rca0:rca, review0:review, why0:why, cust:g(r,'customer_id'), nama:g(r,'nama'), alamat:g(r,'alamat'),
-      tiket:g(r,'tiket'), ikr:g(r,'ikr'), assignH, tsH, region:g(r,'region')||g(r,'stasiun')||'(Tanpa Region)', stasiun:g(r,'stasiun'), dur, mitra:g(r,'mitra')||'(Tanpa Mitra)', kategori:g(r,'kategori'), teknisi:g(r,'teknisi'),
+      tiket:g(r,'tiket'), ikr:g(r,'ikr'), ikrp:g(r,'ikrp'), assignH, tsH, region:g(r,'region')||g(r,'stasiun')||'(Tanpa Region)', stasiun:g(r,'stasiun'), dur, mitra:g(r,'mitra')||'(Tanpa Mitra)', kategori:g(r,'kategori'), teknisi:g(r,'teknisi'),
       konsis, konsisLvl, statusRaw, st, stNote:rf.note, slaRaw, sla, af, av, aw, rca, review, why, umur };
   });
   SCOPE_INFO={raw:rows.length,after:0,kats:{},tikets:{}};
@@ -1484,6 +1623,7 @@ function renderAll(){
   else if(VIEW==='detail'){ renderDailyClose(); renderTable(); $('resultCount').textContent=`Menampilkan ${nf(FILTERED.length)} dari ${nf(ALL_ROWS.length)} WO`; }
   else if(VIEW==='followup'){ renderFollowUp(); }
   else if(VIEW==='weekly'){ renderWeekly(); }
+  else if(VIEW==='dismantle'){ renderDismantle(); if(!DSM.busy&&(!DSM.ts||Date.now()-DSM.ts>45000)) fetchDsm(); }
   else { renderKpiMitra(); }
   renderMb(); renderHero(); refreshIcons();
 }
@@ -1493,7 +1633,7 @@ function showView(v){
   document.querySelectorAll('#nav a').forEach(a=>{ const on=a.dataset.v===v; a.classList.toggle('active',on); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
   const n=NAV.find(x=>x[0]===v); $('pageTitle').textContent=n[2]; document.title='STARLITE · '+n[2]; document.body.dataset.view=v;
   try{ history.replaceState(null,'','#'+v); }catch(e){}
-  window.scrollTo(0,0); if(ALL_ROWS.length) renderAll();
+  window.scrollTo(0,0); if(ALL_ROWS.length||v==='dismantle') renderAll();
 }
 let GRID='#EEF2F8'; const C_OPEN='#2556D9', C_CLOSE='#2FB584', C_CANCEL='#DC2626';
 const isDark=()=>document.documentElement.dataset.theme==='dark';
