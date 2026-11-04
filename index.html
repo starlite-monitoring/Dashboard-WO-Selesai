@@ -445,7 +445,7 @@ th.sortable{cursor:pointer;} .rtable-wrap th.sortable:hover{color:var(--blue);}
 .ov-note{grid-column:1/-1;font-size:12px;color:var(--mute);line-height:1.5;}
 .ov-drawer{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12.5px;margin-bottom:8px;}
 
-.b-blue{background:var(--blue-soft);color:var(--blue);} .b-red{background:var(--red-soft);color:var(--red-ink);}
+.b-blue{background:var(--blue-soft);color:var(--blue);} .b-violet{background:#EDE9FE;color:#6D28D9;} .b-red{background:var(--red-soft);color:var(--red-ink);}
 .seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;align-self:flex-start;}
 .seg button{border:0;background:transparent;color:var(--mute);font:600 12.5px Inter,sans-serif;padding:6px 14px;border-radius:8px;cursor:pointer;}
 .seg button.on{background:var(--card);color:var(--blue);box-shadow:0 1px 3px rgba(15,23,42,.15);}
@@ -594,6 +594,7 @@ details.fu{border:1px solid var(--line);border-radius:14px;background:var(--card
       <section class="kpi8" id="kpiGrid" aria-label="Statistik utama"></section>
       <div class="strip" id="strip"></div>
       <div class="mb-strip" id="mbStrip"></div>
+      <section class="card panel sec" id="srcSec" style="display:none"></section>
 
       <section class="two two-eq sec">
         <div class="card panel"><div class="panel-head"><div><h2>Komposisi Status WO</h2><div class="sub">Seluruh WO · Over SLA adalah indikator, bukan status</div></div></div>
@@ -789,7 +790,7 @@ const SLA_L = { OVER:'Over SLA', OK:'Dalam SLA', NA:'Tidak ada data' };
 let HEADERS=[], RAW=[], COLMAP={}, MAP_KEY='';
 let ALL_ROWS=[], FILTERED=[], HIST={}, STATUS_COUNTS={}, SLA_COUNTS={}, DUP_ROWS=0, UNIQ_WO=0;
 let DEDUP=true; try{ const s=localStorage.getItem(LS_DEDUP); if(s!==null) DEDUP = s==='1'; }catch(e){}
-const F0 = { status:'all', sla:'', region:'', stasiun:'', rca:'', mitra:'', kategori:'', q:'', woFrom:'', woTo:'', vFrom:'', vTo:'' };
+const F0 = { sumber:'', status:'all', sla:'', region:'', stasiun:'', rca:'', mitra:'', kategori:'', q:'', woFrom:'', woTo:'', vFrom:'', vTo:'' };
 let F = Object.assign({}, F0);
 let VIEW='dashboard', MITRA_SEL='';
 const FU_OPT=['Belum ditangani','Sudah dihubungi','Dijadwalkan ulang','Menunggu pelanggan','Eskalasi ke mitra','Butuh material / perangkat','Selesai, menunggu verifikasi'];
@@ -797,7 +798,7 @@ const LS_OVR='starlite_wo_ovr_v1'; let OVR={};
 try{ OVR=JSON.parse(localStorage.getItem(LS_OVR)||'{}')||{}; }catch(e){ OVR={}; }
 function saveOvr(){ try{ localStorage.setItem(LS_OVR,JSON.stringify(OVR)); return true; }catch(e){ toast('Penyimpanan browser diblokir; koreksi hanya berlaku selama halaman terbuka'); return false; } }
 function applyOvr(r){ r.rca=r.rca0; r.review=r.review0; r.why=r.why0; r.manual=false; const o=OVR[r.id]; r.ovr=o||null; if(o&&(r.st==='SELESAI'||r.st==='CANCEL')&&o.rca){ r.rca=o.rca; r.review=false; r.manual=true; r.why='RCA diisi manual'; } }
-const NAV=[['dashboard','layout-dashboard','Dashboard WO Visit'],['detail','clipboard-list','Detail WO Visit'],['kpi','trophy','KPI Mitra'],['followup','send','Follow Up Mitra'],['weekly','file-text','Summary Weekly CS'],['dismantle','unplug','Monitoring WO Dismantle']];
+const NAV=[['dashboard','layout-dashboard','Dashboard WO Visit'],['detail','clipboard-list','Detail WO Visit'],['kpi','trophy','KPI Mitra'],['followup','send','Follow Up Mitra'],['weekly','file-text','Summary Weekly CS']];
 const LS_SCOPE='starlite_scope_v2';
 let KAT_ANY=true, SCOPE={from:'2026-05-01',to:'2027-01-31',kat:null,tiket:''}, SCOPE_INFO={raw:0,after:0,kats:{},tikets:{}};
 try{ const sc=JSON.parse(localStorage.getItem(LS_SCOPE)||'null'); if(sc) SCOPE=Object.assign(SCOPE,sc); }catch(e){}
@@ -1313,90 +1314,6 @@ function renderWeekly(){
   $q('wkCsv').addEventListener('click',()=>{ if(!WK_MITRA.length) return toast('Tidak ada data'); download(new Blob(['\ufeff'+Papa.unparse(WK_MITRA.map(m=>({Mitra:m.name,'Jumlah WO closed':m.n,'SLA rata-rata (jam)':m.sla==null?'':+m.sla.toFixed(1),'Assign time (jam)':m.as==null?'':+m.as.toFixed(1),'Troubleshooting (jam)':m.ts==null?'':+m.ts.toFixed(1)})))],{type:'text/csv;charset=utf-8;'}),`Summary_Weekly_CS_${WK.from}_${WK.to}.csv`); toast('CSV diunduh'); });
 }
 
-/* ============================================================
-   MONITORING WO DISMANTLE (kategori "Pengambilan ONT (Dismantle)", dibaca langsung dari Metabase lewat Apps Script proxy)
-   ============================================================ */
-const DSM={ver:'',items:[],ts:null,err:'',busy:false,q:'',mitra:'',stasiun:'',st:'OPEN',sort:'umur',lim:100};
-(function(){ const v=document.createElement('div'); v.className='view'; v.id='v-dismantle'; $('v-kpi').parentNode.appendChild(v); })();
-const DSM_COLS={ id:['workorderid','woid','idwo','wonumber','workordernumber','nomorwo','noticket','ticketid','workorder','wo'], created:['workordercreatedat'], status:['statuscategory'], mitra:['partnername','namapartner'], stasiun:['stationname','stasiun'], region:['region'], cust:['customerid','idpelanggan'], nama:['customername','namapelanggan'], ikrp:['ikrpartnername'], kat:['kategoriworkorder'], sla:['statussla'], comp:['visitcompletedtime'], tipe:['tipeworkorder'] };
-function dsmBuild(cols,rows){
-  const nh=cols.map(norm), ix={}; Object.keys(DSM_COLS).forEach(f=>{ for(const a of DSM_COLS[f]){ const i=nh.indexOf(a); if(i>-1){ ix[f]=i; break; } } });
-  if(ix.id==null){ const i=cols.findIndex(h=>ID_RE.test(h)); if(i>-1) ix.id=i; }
-  const g=(r,f)=>ix[f]==null?'':String(r[ix[f]]==null?'':r[ix[f]]).trim(), today=new Date(); today.setHours(0,0,0,0);
-  if(ix.kat!=null) rows=rows.filter(r=>/dismantle/i.test(String(r[ix.kat]==null?'':r[ix.kat])));
-  return rows.map((r,i)=>{ const statusRaw=g(r,'status'), st=statusKey(statusRaw), cr=parseDT(g(r,'created')), comp=parseDT(g(r,'comp')), open=!['SELESAI','CANCEL'].includes(st), tgl=cr?new Date(cr.getFullYear(),cr.getMonth(),cr.getDate()):null;
-    return { id:g(r,'id')||('ROW-'+(i+2)), statusRaw, st, open, created:cr, comp, tgl, umur:(open&&tgl)?Math.max(0,Math.floor((today-tgl)/86400000)):null, mitra:g(r,'mitra')||'(Tanpa Mitra)', stasiun:g(r,'stasiun')||g(r,'region')||'(Tanpa Stasiun)', region:g(r,'region'), cust:g(r,'cust'), nama:g(r,'nama'), ikrp:g(r,'ikrp'), sla:slaKey(g(r,'sla')), slaRaw:g(r,'sla') }; });
-}
-async function fetchDsm(){
-  if(!MB_PROXY){ DSM.err='URL Apps Script proxy belum diisi'; if(VIEW==='dismantle') renderDismantle(); return; }
-  if(DSM.busy) return; DSM.busy=true;
-  try{
-    const j=JSON.parse(await fetchTimeout(MB_PROXY+'?mode=dismantle&ver='+encodeURIComponent(DSM.ver)+'&_='+Date.now(),45000));
-    if(!j||j.ok===false) throw new Error(j&&j.error||'proxy gagal');
-    if(!j.same){ DSM.items=dsmBuild(j.cols||[],j.rows||[]); DSM.ver=j.ver; }
-    DSM.ts=new Date(); DSM.upd=j.ts?new Date(j.ts):null; DSM.err='';
-  }catch(e){ DSM.err=String(e&&e.message||e)||'tidak ada jawaban / waktu habis'; }
-  DSM.busy=false; if(VIEW==='dismantle') renderDismantle();
-}
-setInterval(()=>{ if(!document.hidden&&VIEW==='dismantle') fetchDsm(); },60*1000);
-const DSM_ST={SELESAI:['CLOSE','b-green'],CANCEL:['CANCEL','b-red']};
-function dsmFiltered(){
-  const q=DSM.q.toLowerCase();
-  let a=DSM.items.filter(r=>(DSM.st==='ALL'||(DSM.st==='OPEN'&&r.open)||(DSM.st==='SELESAI'&&r.st==='SELESAI')||(DSM.st==='CANCEL'&&r.st==='CANCEL'))&&(!DSM.mitra||r.mitra===DSM.mitra)&&(!DSM.stasiun||r.stasiun===DSM.stasiun)&&(!q||[r.id,r.cust,r.nama,r.ikrp,r.mitra].some(v=>String(v).toLowerCase().includes(q))));
-  const so={umur:(x,y)=>(y.umur||0)-(x.umur||0),mitra:(x,y)=>x.mitra.localeCompare(y.mitra)||(y.umur||0)-(x.umur||0),tgl:(x,y)=>(y.created?+y.created:0)-(x.created?+x.created:0)}[DSM.sort];
-  return a.sort(so);
-}
-function dsmMsg(name,rows){ return ikrMsg({title:'ESKALASI WO DISMANTLE',name,unit:'WO Dismantle',rows,urgent:rows.filter(r=>r.sla==='OVER').length,tail:'Mohon dibantu percepatan pengambilan ONT (dismantle) dan Closed WO di aplikasi IKR. Terima kasih.'}); }
-function renderDismantle(){
-  const root=$('v-dismantle'), A=DSM.items;
-  if(!A.length){
-    root.innerHTML=`<div class="card panel"><div class="panel-head"><div><h2>Monitoring WO Dismantle</h2><div class="sub">Kategori Pengambilan ONT (Dismantle) · sumber: Metabase lewat Apps Script</div></div></div>
-      <div class="wk-n" style="text-align:left">${DSM.busy?'Mengambil data WO Dismantle…':(DSM.err?('Belum dapat mengambil data ('+esc(DSM.err)+'). Pastikan Code v7 sudah di-deploy (Versi baru, akses Siapa saja) dan URL /exec terisi di pengaturan (ikon filter, kolom URL Apps Script proxy).'):'Belum ada data WO Dismantle dari Metabase.')} <button class="lnk" id="dsmRetry">coba lagi</button></div></div>`;
-    const b=$('dsmRetry'); if(b) b.onclick=fetchDsm; return; }
-  const open=A.filter(r=>r.open), close=A.filter(r=>r.st==='SELESAI'), cancel=A.filter(r=>r.st==='CANCEL'), over=open.filter(r=>r.sla==='OVER'), avgAge=open.length?open.reduce((s,r)=>s+(r.umur||0),0)/open.length:0;
-  const mitras=uniqSorted(A.map(r=>r.mitra)), stns=uniqSorted(A.filter(r=>!DSM.mitra||r.mitra===DSM.mitra).map(r=>r.stasiun));
-  const F=dsmFiltered(), shown=F.slice(0,DSM.lim);
-  const opt=(arr,cur,all)=>`<option value="">${all}</option>`+arr.map(v=>`<option value="${esc(v)}"${v===cur?' selected':''}>${esc(v)}</option>`).join('');
-  const byM={}; open.forEach(r=>{ const m=byM[r.mitra]=byM[r.mitra]||{n:0,o:0,rows:[]}; m.n++; if(r.sla==='OVER') m.o++; m.rows.push(r); });
-  const mList=Object.keys(byM).sort((a,b)=>byM[b].n-byM[a].n||a.localeCompare(b));
-  root.innerHTML=`<div class="wk-cards" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-    <div class="wk-c"><div class="l">Total WO Dismantle</div><div class="v">${nf(A.length)}</div><div class="u">sejak 1 Mei 2026</div></div>
-    <div class="wk-c"><div class="l">WO Open</div><div class="v">${nf(open.length)}</div><div class="u">${pct(open.length,A.length)} dari total</div></div>
-    <div class="wk-c"><div class="l">WO Close</div><div class="v">${nf(close.length)}</div><div class="u">${pct(close.length,A.length)}</div></div>
-    <div class="wk-c"><div class="l">Open Over SLA</div><div class="v">${nf(over.length)}</div><div class="u">rata-rata umur open ${avgAge.toFixed(1).replace('.',',')} hari</div></div></div>
-   <div class="count" style="margin:8px 2px">Data langsung dari Metabase, diperbarui ${DSM.upd?fmtDT(DSM.upd):'-'} · cek ulang tiap 1 menit${DSM.err?' · <span style="color:var(--red-ink)">gagal memperbarui: '+esc(DSM.err)+'</span>':''} · Cancel: ${nf(cancel.length)}</div>
-   <div class="two sec" style="margin-top:12px"><div class="card panel"><div class="panel-head"><div><h2>Komposisi Status</h2></div></div><div style="position:relative;height:250px"><canvas id="chDsmSt"></canvas></div></div>
-    <div class="card panel"><div class="panel-head"><div><h2>WO Open per Mitra</h2><div class="sub">Top 12 · merah = Over SLA</div></div></div><div style="position:relative;height:${Math.max(250,Math.min(12,mList.length)*26+70)}px"><canvas id="chDsmM"></canvas></div></div></div>
-   <div class="two sec" style="margin-top:12px"><div class="card panel"><div class="panel-head"><div><h2>WO Open per Stasiun</h2><div class="sub">Top 12</div></div></div><div style="position:relative;height:320px"><canvas id="chDsmStn"></canvas></div></div>
-    <div class="card panel"><div class="panel-head"><div><h2>Tren 30 Hari</h2><div class="sub">WO dibuat vs WO selesai per hari</div></div></div><div style="position:relative;height:320px"><canvas id="chDsmDay"></canvas></div></div></div>
-   <div class="card panel sec" style="margin-top:12px"><div class="panel-head"><div><h2>Daftar WO Dismantle</h2><div class="sub">${nf(F.length)} WO sesuai filter</div></div><div class="wk-tools"><button class="btn btn-sm" id="dsmCsv">${ic('download')}CSV</button></div></div>
-    <div class="wk-bar" style="box-shadow:none;margin-bottom:10px"><div class="fld"><label for="dsmQ">Cari</label><input type="search" id="dsmQ" value="${esc(DSM.q)}" placeholder="ID pelanggan / nama / IKR"></div>
-     <div class="fld"><label for="dsmSt">Status</label><select id="dsmStSel">${[['OPEN','Open'],['SELESAI','Close'],['CANCEL','Cancel'],['ALL','Semua']].map(([k,l])=>`<option value="${k}"${DSM.st===k?' selected':''}>${l}</option>`).join('')}</select></div>
-     <div class="fld"><label for="dsmM">Mitra</label><select id="dsmMSel">${opt(mitras,DSM.mitra,'Semua mitra')}</select></div>
-     <div class="fld"><label for="dsmS">Stasiun</label><select id="dsmSSel">${opt(stns,DSM.stasiun,'Semua stasiun')}</select></div>
-     <div class="fld"><label for="dsmSo">Urutkan</label><select id="dsmSoSel">${[['umur','Umur terlama'],['mitra','Mitra'],['tgl','Terbaru dibuat']].map(([k,l])=>`<option value="${k}"${DSM.sort===k?' selected':''}>${l}</option>`).join('')}</select></div></div>
-    <div class="rtable-wrap tall-wrap" style="max-height:560px"><table class="wk-t"><thead><tr><th>Mitra</th><th>Stasiun</th><th>ID Pelanggan</th><th>Nama</th><th>IKR Partner</th><th>Status</th><th>Umur</th><th>SLA</th><th>Dibuat</th></tr></thead><tbody>${shown.map(r=>`<tr><td class="l">${esc(r.mitra)}</td><td class="l">${esc(r.stasiun)}</td><td>${esc(r.cust||r.id)}</td><td class="l">${esc(r.nama||'-')}</td><td class="l">${esc(r.ikrp||'-')}</td><td>${esc(r.statusRaw||'-')}</td><td>${r.umur==null?'–':r.umur+' hr'}</td><td>${r.sla==='OVER'?'<span class="b b-over">Over</span>':(r.sla==='OK'?'<span class="b b-ok">OK</span>':'–')}</td><td>${r.created?fmtDate(r.created):'-'}</td></tr>`).join('')||'<tr><td colspan="9">Tidak ada data</td></tr>'}</tbody></table></div>
-    ${F.length>DSM.lim?`<div style="text-align:center;margin:10px"><button class="btn" id="dsmMore">Tampilkan lebih banyak (${nf(F.length-DSM.lim)})</button></div>`:''}</div>
-   <div class="card panel sec" style="margin-top:12px"><div class="panel-head"><div><h2>Follow Up Mitra — WO Dismantle Open</h2><div class="sub">Pesan dikelompokkan per stasiun lalu per IKR Partner</div></div></div>
-    <div id="dsmFu">${mList.map(n=>`<div class="fu-row" style="display:flex;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:0"><b>${esc(n)}</b><div class="count">${nf(byM[n].n)} WO Open · ${nf(byM[n].o)} Over SLA</div></div><button class="btn btn-sm btn-primary" data-dm="${esc(n)}">${ic('clipboard-copy')}Copy Pesan</button></div>`).join('')||'<div class="empty">Tidak ada WO Dismantle open.</div>'}</div></div>`;
-  const $q=id=>root.querySelector('#'+id), bind=(id,k,ev)=>{ const e=$q(id); if(e) e.addEventListener(ev||'change',()=>{ DSM[k]=e.value; if(k==='mitra') DSM.stasiun=''; DSM.lim=100; renderDismantle(); refreshIcons(); }); };
-  bind('dsmStSel','st'); bind('dsmMSel','mitra'); bind('dsmSSel','stasiun'); bind('dsmSoSel','sort');
-  const qi=$q('dsmQ'); if(qi) qi.addEventListener('input',debounce(()=>{ DSM.q=qi.value.trim(); DSM.lim=100; renderDismantle(); refreshIcons(); const f=$q('dsmQ'); f.focus(); f.setSelectionRange(f.value.length,f.value.length); },300));
-  const mo=$q('dsmMore'); if(mo) mo.addEventListener('click',()=>{ DSM.lim+=200; renderDismantle(); refreshIcons(); });
-  $q('dsmCsv').addEventListener('click',()=>{ if(!F.length) return toast('Tidak ada data'); download(new Blob(['﻿'+Papa.unparse(F.map(r=>({Mitra:r.mitra,Stasiun:r.stasiun,'ID Pelanggan':r.cust||r.id,'Nama Pelanggan':r.nama,'IKR Partner':r.ikrp,Status:r.statusRaw,'Umur (hari)':r.umur==null?'':r.umur,SLA:r.sla==='OVER'?'Over':'',Dibuat:r.created?fmtDT(r.created):''})))],{type:'text/csv;charset=utf-8;'}),'WO_Dismantle_'+stamp()+'.csv'); toast('CSV diunduh'); });
-  root.querySelectorAll('button[data-dm]').forEach(b=>b.addEventListener('click',()=>{ const n=b.dataset.dm, t=dsmMsg(n,byM[n].rows.slice().sort((x,y)=>(x.stasiun||'').localeCompare(y.stasiun||'')||(y.umur||0)-(x.umur||0))); $('fuTitle').textContent='Push Eskalasi — '+n; $('fuTxt').value=t; $('fuOv').classList.add('show'); copyText(t,false); }));
-  // grafik
-  if(!chartBase()) return; ['dsmSt','dsmM','dsmStn','dsmDay'].forEach(destroy);
-  const mt=mList.slice(0,12);
-  charts.dsmSt=new Chart($('chDsmSt'),{type:'doughnut',data:{labels:['WO Open','WO Close','WO Cancel'],datasets:[{data:[open.length,close.length,cancel.length],backgroundColor:[C_OPEN,C_CLOSE,C_CANCEL],borderWidth:2,borderColor:isDark()?'#111C30':'#fff',hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom'}}}});
-  charts.dsmM=new Chart($('chDsmM'),{type:'bar',data:{labels:mt,datasets:[{label:'Open (belum Over SLA)',data:mt.map(k=>byM[k].n-byM[k].o),backgroundColor:C_OPEN,stack:'s'},{label:'Open Over SLA',data:mt.map(k=>byM[k].o),backgroundColor:C_CANCEL,stack:'s'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:isMob()?30:50}},plugins:{totalLabels:{on:true},legend:{position:'top'}},scales:{x:{stacked:true,beginAtZero:true,grid:{color:GRID},ticks:{precision:0}},y:{stacked:true,grid:{display:false},ticks:{autoSkip:false,callback(v){ return shortLbl(this.getLabelForValue(v),isMob()?18:30); }}}}}});
-  const bs={}; open.forEach(r=>{ bs[r.stasiun]=(bs[r.stasiun]||0)+1; }); const sk=Object.keys(bs).sort((a,b)=>bs[b]-bs[a]).slice(0,12);
-  charts.dsmStn=new Chart($('chDsmStn'),{type:'bar',data:{labels:sk,datasets:[{label:'WO Open',data:sk.map(k=>bs[k]),backgroundColor:'#7C3AED'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:isMob()?30:44}},plugins:{totalLabels:{on:true},legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:GRID},ticks:{precision:0}},y:{grid:{display:false},ticks:{autoSkip:false,callback(v){ return shortLbl(this.getLabelForValue(v),isMob()?16:26); }}}}}});
-  const days=[]; const t0=new Date(); t0.setHours(0,0,0,0); for(let i=29;i>=0;i--){ const d=new Date(t0); d.setDate(d.getDate()-i); days.push(dayKey(d)); }
-  const cr={},cl={}; A.forEach(r=>{ if(r.tgl){ const k=dayKey(r.tgl); cr[k]=(cr[k]||0)+1; } if(r.st==='SELESAI'&&r.comp){ const k=dayKey(r.comp); cl[k]=(cl[k]||0)+1; } });
-  charts.dsmDay=new Chart($('chDsmDay'),{type:'line',data:{labels:days.map(k=>k.slice(8)+'/'+k.slice(5,7)),datasets:[{label:'Dibuat',data:days.map(k=>cr[k]||0),borderColor:C_OPEN,backgroundColor:hexA(C_OPEN,.12),fill:true,tension:.35,pointRadius:2},{label:'Selesai',data:days.map(k=>cl[k]||0),borderColor:C_CLOSE,backgroundColor:hexA(C_CLOSE,.12),fill:true,tension:.35,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom'}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:isMob()?8:15}},y:{beginAtZero:true,grid:{color:GRID},ticks:{precision:0}}}}});
-}
-
 /* ---------- Follow Up Mitra ---------- */
 const FU={q:'',sort:'open',onlyUrg:false,detUrg:false,lim:40};
 const FU_COL=['#2556D9','#0EA5E9','#7C3AED','#2FB584','#F59E0B','#EC4899','#14B8A6','#F97316'];
@@ -1488,6 +1405,35 @@ function loadFile(file){
     error:()=>showErr('File CSV tidak dapat dibaca.') });
 }
 
+
+/* ---------- Sumber pembuatan WO: AIDC (endpoint) vs Mekari / CS ---------- */
+const SRC_RE=/endpoint\s*aidc/i, SRC_AIDC='AIDC', SRC_CS='Mekari / CS', SRC_LIST=[SRC_AIDC,SRC_CS];
+let SRC_COL=-1, SRC_MODE='';
+const SRC_ON=()=>SRC_MODE!=='';
+function detectSrc(){
+  SRC_COL=-1; SRC_MODE=''; const cnt={};
+  for(let i=0;i<RAW.length;i++){ const r=RAW[i]; for(let c=0;c<r.length;c++){ const v=r[c]; if(typeof v==='string'&&v.length>12&&v.length<600&&v.indexOf('ndpoint')>-1&&SRC_RE.test(v)) cnt[c]=(cnt[c]||0)+1; } }
+  let best=-1; Object.keys(cnt).forEach(k=>{ if(best<0||cnt[k]>cnt[best]) best=+k; });
+  if(best>-1){ SRC_COL=best; SRC_MODE='text'; } else if(COLMAP.ikr>=0) SRC_MODE='ikr';
+}
+function classifySrc(r,ikr){
+  if(SRC_MODE==='text'){ const v=r[SRC_COL]; return (typeof v==='string'&&SRC_RE.test(v))?SRC_AIDC:SRC_CS; }
+  if(SRC_MODE==='ikr') return /aidc/i.test(ikr)?SRC_AIDC:SRC_CS;
+  return '';
+}
+function renderSumber(){
+  const el=$('srcSec'); if(!el) return;
+  if(!SRC_ON()){ el.style.display='none'; return; } el.style.display='';
+  const A=dRows(), tot=A.length||1;
+  const card=(k,col)=>{ const rs=A.filter(r=>r.sumber===k), c=cnt(rs), over=rs.filter(r=>isOpen(r)&&r.sla==='OVER').length, pc=rs.length/tot*100;
+    return `<button class="wk-c src-c" data-k="${esc(k)}" style="text-align:left;cursor:pointer;border-top:3px solid ${col}"><div class="l">${esc(k)}</div><div class="v">${nf(rs.length)}</div><div class="u">${pc.toFixed(1).replace('.',',')}% dari total WO</div>
+      <div style="height:6px;border-radius:6px;background:var(--line);margin:8px 0 6px;overflow:hidden"><div style="height:100%;width:${pc}%;background:${col}"></div></div>
+      <div class="u">OPEN ${nf(rs.filter(isOpen).length)} · CLOSE ${nf(c.SELESAI)} · CANCEL ${nf(c.CANCEL)} · Open Over SLA ${nf(over)}</div></button>`; };
+  el.innerHTML=`<div class="panel-head"><div><h2>Sumber Pembuatan WO</h2><div class="sub">AIDC = WO dibuat dari endpoint AIDC (Mohon periksa: RX Abnormal, Masalah: Sinyal Optik Lemah) · selain itu = dibuat dari Mekari / CS</div></div></div>
+    <div class="wk-cards" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">${card(SRC_AIDC,'#7C3AED')}${card(SRC_CS,'#2556D9')}</div>
+    <div class="count" style="margin-top:8px">${SRC_MODE==='text'?'Dibaca dari kolom "'+esc(HEADERS[SRC_COL]||('kolom '+(SRC_COL+1)))+'". ':'Kolom teks "dibuat dari endpoint AIDC" tidak ditemukan; sementara dibaca dari kolom Dibuat oleh / Nama IKR. '}Klik kartu untuk melihat daftar WO.</div>`;
+  el.querySelectorAll('.src-c').forEach(b=>b.addEventListener('click',()=>toTable({sumber:b.dataset.k})));
+}
 /* ============================================================
    PROSES BARIS
    ============================================================ */
@@ -1495,6 +1441,7 @@ function processRows(){
   const g=(r,f)=>COLMAP[f]>=0?String(r[COLMAP[f]]==null?'':r[COLMAP[f]]).trim():'';
   STATUS_COUNTS={}; SLA_COUNTS={}; HIST={};
   const today=new Date(); today.setHours(0,0,0,0);
+  detectSrc();
   let rows=RAW.map((r,i)=>{
     const statusRaw=g(r,'status'), base=statusKey(statusRaw), af=g(r,'action_desc');
     const rf=refineFromAf(base,af), st=rf.st;
@@ -1519,7 +1466,7 @@ function processRows(){
       if(tsH==null&&assignH!=null&&dur!=null) tsH=Math.max(0,dur-assignH); }
     const id=g(r,'id_wo')||('ROW-'+(i+2));
     return { _idx:i, id, tglWo, visit, close, rel:relD, comp:compD, stBase:base, rca0:rca, review0:review, why0:why, cust:g(r,'customer_id'), nama:g(r,'nama'), alamat:g(r,'alamat'),
-      tiket:g(r,'tiket'), ikr:g(r,'ikr'), ikrp:g(r,'ikrp'), assignH, tsH, region:g(r,'region')||g(r,'stasiun')||'(Tanpa Region)', stasiun:g(r,'stasiun'), dur, mitra:g(r,'mitra')||'(Tanpa Mitra)', kategori:g(r,'kategori'), teknisi:g(r,'teknisi'),
+      tiket:g(r,'tiket'), sumber:classifySrc(r,g(r,'ikr')), ikr:g(r,'ikr'), ikrp:g(r,'ikrp'), assignH, tsH, region:g(r,'region')||g(r,'stasiun')||'(Tanpa Region)', stasiun:g(r,'stasiun'), dur, mitra:g(r,'mitra')||'(Tanpa Mitra)', kategori:g(r,'kategori'), teknisi:g(r,'teknisi'),
       konsis, konsisLvl, statusRaw, st, stNote:rf.note, slaRaw, sla, af, av, aw, rca, review, why, umur };
   });
   SCOPE_INFO={raw:rows.length,after:0,kats:{},tikets:{}};
@@ -1555,6 +1502,7 @@ function matchRow(r,skip){
   if(!skip.rca && F.rca && r.rca!==F.rca) return false;
   if(F.mitra && r.mitra!==F.mitra) return false;
   if(F.kategori && r.kategori!==F.kategori) return false;
+  if(F.sumber && r.sumber!==F.sumber) return false;
   if(F.woFrom && (!r.tglWo || r.tglWo<new Date(F.woFrom+'T00:00:00'))) return false;
   if(F.woTo && (!r.tglWo || r.tglWo>new Date(F.woTo+'T23:59:59'))) return false;
   if(F.vFrom && (!r.visit || r.visit<new Date(F.vFrom+'T00:00:00'))) return false;
@@ -1575,12 +1523,13 @@ function buildFilters(){
     sel('fRca','RCA',rcaVals,F.rca) +
     sel('fMitra','Mitra / Vendor',uniqSorted(ALL_ROWS.map(r=>r.mitra)),F.mitra) +
     (COLMAP.kategori>=0 ? sel('fKat','Jenis Pekerjaan',uniqSorted(ALL_ROWS.map(r=>r.kategori)),F.kategori) : '') +
+    (SRC_ON() ? sel('fSumber','Sumber WO',SRC_LIST,F.sumber) : '') +
     `<div class="fld"><label for="fStatus">Status WO</label><select id="fStatus">${stOpts.map(([k,l])=>`<option value="${k}"${F.status===k?' selected':''}>${l}</option>`).join('')}</select></div>` +
     `<div class="fld"><label for="fSla">SLA</label><select id="fSla"><option value="">Semua</option>${['OVER','OK','NA'].map(k=>`<option value="${k}"${F.sla===k?' selected':''}>${SLA_L[k]}</option>`).join('')}</select></div>` +
     `<div class="fld"><label for="fWoFrom">Tanggal WO dari</label><input type="date" id="fWoFrom" value="${F.woFrom}"></div>` +
     `<div class="fld"><label for="fWoTo">Tanggal WO sampai</label><input type="date" id="fWoTo" value="${F.woTo}"></div>` +
     (COLMAP.tgl_visit>=0 ? `<div class="fld"><label for="fVFrom">Jadwal visit dari</label><input type="date" id="fVFrom" value="${F.vFrom}"></div><div class="fld"><label for="fVTo">Jadwal visit sampai</label><input type="date" id="fVTo" value="${F.vTo}"></div>` : '');
-  [['fRegion','region'],['fStasiun','stasiun'],['fRca','rca'],['fMitra','mitra'],['fKat','kategori'],['fStatus','status'],['fSla','sla'],['fWoFrom','woFrom'],['fWoTo','woTo'],['fVFrom','vFrom'],['fVTo','vTo']].forEach(([id,k])=>{
+  [['fRegion','region'],['fStasiun','stasiun'],['fRca','rca'],['fMitra','mitra'],['fKat','kategori'],['fSumber','sumber'],['fStatus','status'],['fSla','sla'],['fWoFrom','woFrom'],['fWoTo','woTo'],['fVFrom','vFrom'],['fVTo','vTo']].forEach(([id,k])=>{
     const el=$(id); if(el) el.addEventListener('change',e=>{ F[k]=e.target.value||(k==='status'?'all':''); page=1; applyFilters(); });
   });
   $('searchInput').value=F.q;
@@ -1589,7 +1538,7 @@ function buildFilters(){
 }
 function applyFilters(){ FILTERED=rowsWhere({}); renderAll(); }
 function setStatusFilter(k){ F.status = (F.status===k && k!=='all') ? 'all' : k; page=1; syncSelects(); applyFilters(); }
-function syncSelects(){ const m={fStatus:F.status,fSla:F.sla,fRegion:F.region,fRca:F.rca,fMitra:F.mitra}; Object.keys(m).forEach(id=>{ const e=$(id); if(e) e.value=m[id]; }); }
+function syncSelects(){ const m={fStatus:F.status,fSla:F.sla,fRegion:F.region,fRca:F.rca,fMitra:F.mitra,fSumber:F.sumber}; Object.keys(m).forEach(id=>{ const e=$(id); if(e) e.value=m[id]; }); }
 function scrollToTable(){ $('mainTable').scrollIntoView({behavior:'smooth',block:'start'}); }
 
 /* ============================================================
@@ -1621,11 +1570,10 @@ function renderNotif(){
 function updateToday(){ const k=dayKey(new Date()); const n=ALL_ROWS.filter(r=>r.st==='SELESAI'&&compDay(r)===k).length; $('todayClose').textContent=nf(n); $('todayChip').title='WO CLOSE (tanggal WO Completed) hari ini: '+fmtDate(new Date()); }
 function renderAll(){
   updateToday(); renderNotif();
-  if(VIEW==='dashboard'){ renderHero(); renderKpi(); renderStatus(); renderRegion(); renderSla(); renderDaily(); renderMitra(); renderRca(); renderRcaExtra(); }
+  if(VIEW==='dashboard'){ renderHero(); renderKpi(); renderSumber(); renderStatus(); renderRegion(); renderSla(); renderDaily(); renderMitra(); renderRca(); renderRcaExtra(); }
   else if(VIEW==='detail'){ renderDailyClose(); renderTable(); $('resultCount').textContent=`Menampilkan ${nf(FILTERED.length)} dari ${nf(ALL_ROWS.length)} WO`; }
   else if(VIEW==='followup'){ renderFollowUp(); }
   else if(VIEW==='weekly'){ renderWeekly(); }
-  else if(VIEW==='dismantle'){ renderDismantle(); if(!DSM.busy&&(!DSM.ts||Date.now()-DSM.ts>45000)) fetchDsm(); }
   else { renderKpiMitra(); }
   renderMb(); renderHero(); refreshIcons();
 }
@@ -1635,7 +1583,7 @@ function showView(v){
   document.querySelectorAll('#nav a').forEach(a=>{ const on=a.dataset.v===v; a.classList.toggle('active',on); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
   const n=NAV.find(x=>x[0]===v); $('pageTitle').textContent=n[2]; document.title='STARLITE · '+n[2]; document.body.dataset.view=v;
   try{ history.replaceState(null,'','#'+v); }catch(e){}
-  window.scrollTo(0,0); if(ALL_ROWS.length||v==='dismantle') renderAll();
+  window.scrollTo(0,0); if(ALL_ROWS.length) renderAll();
 }
 let GRID='#EEF2F8'; const C_OPEN='#2556D9', C_CLOSE='#2FB584', C_CANCEL='#DC2626';
 const isDark=()=>document.documentElement.dataset.theme==='dark';
@@ -2019,6 +1967,7 @@ const COLS=[
   {k:'stasiun',label:'Stasiun',show:()=>COLMAP.stasiun>=0,sort:r=>r.stasiun},
   {k:'mitra',label:'Mitra',show:()=>COLMAP.mitra>=0,sort:r=>r.mitra},
   {k:'kategori',label:'Jenis Pekerjaan',show:()=>COLMAP.kategori>=0,sort:r=>r.kategori},
+  {k:'sumber',label:'Sumber WO',show:()=>SRC_ON(),sort:r=>r.sumber},
   {k:'visit',label:'Jadwal Visit',show:()=>COLMAP.tgl_visit>=0,sort:r=>r.visit?+r.visit:0},
   {k:'teknisi',label:'Teknisi',show:()=>COLMAP.teknisi>=0},
   {k:'status',label:'Status WO',show:()=>true,sort:r=>ST_ORDER.indexOf(r.st)},
@@ -2049,6 +1998,7 @@ function cell(c,r,i){
     case 'region': return `<td>${esc(r.region)}</td>`;
     case 'stasiun': return `<td>${esc(r.stasiun)||'-'}</td>`;
     case 'mitra': return `<td>${esc(r.mitra)}</td>`;
+    case 'sumber': return `<td>${r.sumber?`<span class="b ${r.sumber===SRC_AIDC?'b-violet':'b-blue'}">${esc(r.sumber)}</span>`:'-'}</td>`;
     case 'kategori': return `<td>${esc(r.kategori)||'-'}</td>`;
     case 'visit': return `<td>${fmtDate(r.visit)}</td>`;
     case 'teknisi': return `<td>${esc(r.teknisi)||'-'}</td>`;
@@ -2110,7 +2060,7 @@ function openDetail(i){
     <div class="grid3">
       <div><div class="k">Status Terkini</div><div class="v">${statusBadges(r)}</div></div>
       ${it('Status Asli (Kolom D)',r.statusRaw)}${it('SLA (Kolom H)',(r.slaRaw||'-')+((r.sla==='OVER'&&!/over/i.test(r.slaRaw))?' — Over SLA':''))}
-      ${it('Nama Pelanggan',r.nama)}${it('ID Pelanggan',r.cust)}${it('Jenis Pekerjaan',r.kategori)}
+      ${it('Nama Pelanggan',r.nama)}${it('ID Pelanggan',r.cust)}${it('Jenis Pekerjaan',r.kategori)}${SRC_ON()?it('Sumber WO',r.sumber):''}
       ${it('Alamat',r.alamat)}${it('Region',r.region)}${it('Mitra',r.mitra)}
       ${it('Work Order Created At (A)',r.rel?fmtDT(r.rel):fmtDate(r.tglWo))}${it('Jadwal Visit',fmtDate(r.visit))}${it('Teknisi',r.teknisi)}
       ${it('Visit Completed Time (K)',r.comp?fmtDT(r.comp):'')}${r.dur!=null&&r.st==='SELESAI'?it('SLA (Created → Completed)',fmtDur(r.dur)):''}${r.stasiun?it('Stasiun',r.stasiun):''}${r.umur!=null?it('Umur WO',nf(r.umur)+' hari'):''}
@@ -2136,7 +2086,7 @@ function editorHtml(r){
   const o=OVR[r.id]||{}, hasRca=r.st==='SELESAI'||r.st==='CANCEL';
   const rcaBlock=hasRca?`<div class="fld" style="grid-column:1/-1"><label for="ovRca">RCA${r.st==='CANCEL'?' pembatalan':''} — ketik bebas atau pilih saran${r.review0?' (saat ini "Perlu Review")':''}</label>
       <input type="text" id="ovRca" list="dlRca" value="${esc(o.rca||'')}" placeholder="${esc(r.rca0&&!r.review0?r.rca0:(r.st==='CANCEL'?'WO Dibatalkan - alasan':'Ketik RCA di sini'))}" autocomplete="off">${dl('dlRca',rcaChoices(r.st))}</div>
-    <div class="ov-note" style="grid-column:1/-1;margin-top:-4px">Isi RCA bila otomatis tidak muncul atau perlu review. Kosongkan untuk kembali ke RCA otomatis.</div>`
+    <div class="ov-note" style="grid-column:1/-1;margin-top:-4px">Isi RCA bila otomatis tidak muncul atau perlu review. Kosongkan untuk kembali ke RCA otomatis.</div>${(o.cause||o.fu)&&!o.rca?`<div class="ov-note" style="grid-column:1/-1">Catatan saat WO masih OPEN masih tersimpan: ${o.cause?'dugaan penyebab <b>'+esc(o.cause)+'</b>':''}${o.cause&&o.fu?' · ':''}${o.fu?'tindak lanjut <b>'+esc(o.fu)+'</b>':''}. ${o.cause?'<button class="lnk" id="ovUse" type="button">Pakai sebagai RCA</button>':''}</div>`:''}`
     :`<div class="fld"><label for="ovFu">Status tindak lanjut</label><select id="ovFu"><option value="">— pilih —</option>${FU_OPT.map(c=>`<option${o.fu===c?' selected':''}>${esc(c)}</option>`).join('')}</select></div>
       <div class="fld"><label for="ovCause">Dugaan penyebab (sementara, tidak masuk statistik RCA)</label><input type="text" id="ovCause" value="${esc(o.cause||'')}" placeholder="Contoh: ONT mati, kabel putus"></div>`;
   return `<div class="h4">Koreksi manual</div><div class="edit-box">${rcaBlock}
@@ -2158,13 +2108,14 @@ function closeSaved(){ $('detailOv').classList.remove('show'); try{ renderAll();
 function bindEditor(r){
   $('ovSave').addEventListener('click',()=>{
     const o={ pic:$('ovPic').value.trim(), note:$('ovNote').value.trim(), at:new Date().toISOString() };
-    if(r.st==='SELESAI'||r.st==='CANCEL'){ o.rca=$('ovRca').value.trim();
+    if(r.st==='SELESAI'||r.st==='CANCEL'){ o.rca=$('ovRca').value.trim(); const pv=OVR[r.id]||{}; if(pv.cause) o.cause=pv.cause; if(pv.fu) o.fu=pv.fu;
       if(r.st==='CANCEL'&&o.rca&&!/^wo dibatalkan/i.test(o.rca)) o.rca=CX+o.rca; }
     else { o.fu=$('ovFu').value; o.cause=$('ovCause').value.trim(); }
     const empty=!(o.rca||o.fu||o.cause||o.pic||o.note);
     if(empty) delete OVR[r.id]; else OVR[r.id]=o;
     saveOvr(); ALL_ROWS.filter(x=>x.id===r.id).forEach(applyOvr); toast(empty?'Koreksi dihapus':'Koreksi disimpan'); closeSaved();
   });
+  const ovUse=$('ovUse'); if(ovUse) ovUse.addEventListener('click',()=>{ const pv=OVR[r.id]||{}; $('ovRca').value=pv.cause||''; $('ovRca').focus(); });
   $('ovDel').addEventListener('click',()=>{ delete OVR[r.id]; saveOvr(); ALL_ROWS.filter(x=>x.id===r.id).forEach(applyOvr); toast('Koreksi dihapus'); closeSaved(); });
 }
 function ovExport(){ const n=Object.keys(OVR).length; if(!n) return toast('Belum ada koreksi manual'); download(new Blob([JSON.stringify(OVR,null,1)],{type:'application/json'}),`Koreksi_Manual_WO_${stamp()}.json`); toast('Diekspor: '+n+' WO'); }
@@ -2173,7 +2124,7 @@ function ovImport(file){ if(!file) return; const fr=new FileReader(); fr.onload=
 /* ---------- Ekspor & salin ---------- */
 function exportRows(){
   return FILTERED.map((r,i)=>({ 'No':i+1,'Nomor WO':r.id,'Tanggal WO':fmtDate(r.tglWo),'Nama Pelanggan':r.nama,'ID Pelanggan':r.cust,'Alamat':r.alamat,'Region':r.region,'Mitra':r.mitra,
-    'Jenis Pekerjaan':r.kategori,'Jadwal Visit':fmtDate(r.visit),'Teknisi':r.teknisi,'Status WO':stCat(r),'Status Asli (D)':r.statusRaw,'Status SLA (H)':r.slaRaw,'Over SLA':r.sla==='OVER'?'Ya':'Tidak',
+    'Jenis Pekerjaan':r.kategori,'Sumber WO':r.sumber,'Jadwal Visit':fmtDate(r.visit),'Teknisi':r.teknisi,'Status WO':stCat(r),'Status Asli (D)':r.statusRaw,'Status SLA (H)':r.slaRaw,'Over SLA':r.sla==='OVER'?'Ya':'Tidak',
     'Stasiun':r.stasiun,'WO Created':r.rel?fmtDT(r.rel):'','Visit Completed':r.comp?fmtDT(r.comp):'','SLA Created-Completed (jam)':r.dur==null?'':+r.dur.toFixed(2),'Umur WO (hari)':r.umur==null?'':r.umur,'Action Description (AF)':r.af,'Kerusakan Karena (AV)':r.av,'Tipe Damage (AW)':r.aw,'RCA (Auto/Manual)':(r.st==='SELESAI'||r.st==='CANCEL')?r.rca:'WO belum selesai - RCA belum ada','Konsistensi AF/AV/AW':r.st==='SELESAI'?(r.konsis||'selaras'):'','RCA Manual':r.manual?'Ya':'','Status tindak lanjut':r.ovr?r.ovr.fu||'':'','Dugaan penyebab (OPEN)':r.ovr?r.ovr.cause||'':'','PIC':r.ovr?r.ovr.pic||'':'','Catatan manual':r.ovr?r.ovr.note||'':'' }));
 }
 function download(blob,name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
