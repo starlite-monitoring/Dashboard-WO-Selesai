@@ -364,6 +364,15 @@ body[data-view=dashboard] .mitra-top{display:flex;}
 .today-chip .pulse{width:9px;height:9px;border-radius:50%;background:#4ADE80;box-shadow:0 0 0 0 rgba(74,222,128,.7);animation:pl 2s infinite;}
 @keyframes pl{70%{box-shadow:0 0 0 9px rgba(74,222,128,0);}100%{box-shadow:0 0 0 0 rgba(74,222,128,0);}}
 /* grafik harian bisa digeser */
+.ss{position:relative;}
+.ss-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:400 13px 'Inter',sans-serif;background:var(--card);color:var(--ink);cursor:pointer;text-align:left;}
+.ss-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .ss-btn:after{content:'';flex:none;width:7px;height:7px;border-right:1.6px solid var(--mute);border-bottom:1.6px solid var(--mute);transform:rotate(45deg) translateY(-2px);}
+.ss-btn.isi{border-color:var(--blue);background:var(--blue-soft);font-weight:600;}
+.ss-pop{display:none;position:absolute;z-index:60;left:0;top:calc(100% + 4px);min-width:100%;width:max-content;max-width:min(380px,90vw);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(15,23,42,.18);padding:8px;}
+.ss.open .ss-pop{display:block;}
+.ss-q{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:400 13px 'Inter',sans-serif;background:var(--card-2);color:var(--ink);margin-bottom:6px;outline:none;} .ss-q:focus{border-color:var(--blue);}
+.ss-list{max-height:280px;overflow:auto;} .ss-it{padding:7px 9px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--ink);white-space:normal;} .ss-it:hover,.ss-it.akt{background:var(--blue-soft);} .ss-it.on{font-weight:700;color:var(--blue);}
+.ss-it mark{background:#FDE68A;color:inherit;border-radius:3px;padding:0 1px;} .ss-none{padding:8px 9px;font-size:12.5px;color:var(--mute);} .ss-n{font-size:11px;color:var(--mute);padding:2px 9px 6px;}
 .hscroll{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:14px;padding:6px 8px 0;background:linear-gradient(180deg,var(--card),var(--card-2));}
 .hscroll .cbox{min-width:100%;}
 .hint-scroll{font-size:12px;color:var(--blue);font-weight:600;background:var(--blue-soft);padding:5px 11px;border-radius:20px;}
@@ -609,7 +618,7 @@ details.fu{border:1px solid var(--line);border-radius:14px;background:var(--card
       <section class="card panel sec"><div class="panel-head"><div><h2>WO per Region</h2><div class="sub">Klik batang untuk melihat daftar WO region tersebut</div></div></div><div class="cbox tall" id="regBox"><canvas id="chReg"></canvas></div></section>
 
       <section class="card panel sec" id="dailyChartSec">
-        <div class="panel-head"><div><h2>WO Harian — CLOSE, OPEN, CANCEL</h2><div class="sub" id="dailySub"></div></div><div class="hint-scroll">↔ Geser grafik untuk melihat tanggal lain</div></div>
+        <div class="panel-head"><div><h2>WO Harian — CLOSE, OPEN, CANCEL</h2><div class="sub" id="dailySub"></div></div><div class="hint-scroll" id="dailyHint">↔ Geser grafik untuk melihat tanggal lain</div></div>
         <div class="seg" id="dailyRange" style="margin:4px 0 10px"><button data-n="7">7 hari</button><button data-n="14">14 hari</button><button data-n="30">30 hari</button><button data-n="0">Semua</button></div>
         <div class="hscroll" id="dailyScroll"><div class="cbox tall" id="dailyBox"><canvas id="chDaily"></canvas></div></div>
         <div class="rtable-wrap tall-wrap" id="dailyTbl" style="margin-top:12px;max-height:340px"></div>
@@ -1600,6 +1609,32 @@ function matchRow(r,skip){
   return true;
 }
 const rowsWhere = skip => ALL_ROWS.filter(r=>matchRow(r,skip));
+/* v21: dropdown bisa dicari. <select> asli tetap ada (tersembunyi) sehingga logika filter tidak berubah. */
+function cariSelect(sel){
+  if(!sel||sel.dataset.ss) return; sel.dataset.ss='1';
+  const w=document.createElement('div'); w.className='ss'; sel.parentNode.insertBefore(w,sel); w.appendChild(sel); sel.style.display='none';
+  const btn=document.createElement('button'); btn.type='button'; btn.className='ss-btn'; btn.setAttribute('aria-haspopup','listbox');
+  const pop=document.createElement('div'); pop.className='ss-pop'; pop.innerHTML='<input class="ss-q" type="text" placeholder="Ketik untuk mencari…" aria-label="Cari pilihan"><div class="ss-n"></div><div class="ss-list" role="listbox"></div>';
+  w.appendChild(btn); w.appendChild(pop);
+  const q=pop.querySelector('.ss-q'), list=pop.querySelector('.ss-list'), info=pop.querySelector('.ss-n'); let akt=0, vis=[];
+  const opts=()=>[...sel.options].map(o=>({v:o.value,t:o.textContent}));
+  const tulis=()=>{ const o=sel.options[sel.selectedIndex]; btn.innerHTML='<span>'+esc(o?o.textContent:'')+'</span>'; btn.classList.toggle('isi',!!sel.value&&sel.value!=='all'); };
+  const tandai=(t,k)=>{ if(!k) return esc(t); const i=t.toLowerCase().indexOf(k); return i<0?esc(t):esc(t.slice(0,i))+'<mark>'+esc(t.slice(i,i+k.length))+'</mark>'+esc(t.slice(i+k.length)); };
+  const isi=()=>{ const k=q.value.trim().toLowerCase(), all=opts(); vis=all.filter((o,i)=>!k||i===0||o.t.toLowerCase().includes(k));
+    if(k&&vis.length&&vis[0]===all[0]&&!all[0].t.toLowerCase().includes(k)) vis=vis.slice(1);
+    akt=Math.min(akt,Math.max(0,vis.length-1));
+    info.textContent=k?nf(vis.length)+' cocok dari '+nf(all.length-1):nf(all.length-1)+' pilihan';
+    list.innerHTML=vis.length?vis.slice(0,400).map((o,i)=>`<div class="ss-it${o.v===sel.value?' on':''}${i===akt?' akt':''}" role="option" data-i="${i}">${tandai(o.t,k)}</div>`).join(''):'<div class="ss-none">Tidak ditemukan</div>'; };
+  const tutup=()=>{ w.classList.remove('open'); };
+  const pilih=o=>{ if(!o) return; sel.value=o.v; tulis(); tutup(); sel.dispatchEvent(new Event('change',{bubbles:true})); };
+  btn.addEventListener('click',e=>{ e.stopPropagation(); const buka=!w.classList.contains('open'); document.querySelectorAll('.ss.open').forEach(x=>x.classList.remove('open')); if(buka){ w.classList.add('open'); q.value=''; akt=0; isi(); q.focus(); } });
+  q.addEventListener('input',()=>{ akt=0; isi(); });
+  q.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'){ akt=Math.min(vis.length-1,akt+1); isi(); e.preventDefault(); } else if(e.key==='ArrowUp'){ akt=Math.max(0,akt-1); isi(); e.preventDefault(); } else if(e.key==='Enter'){ pilih(vis[akt]); e.preventDefault(); } else if(e.key==='Escape'){ tutup(); btn.focus(); } });
+  list.addEventListener('click',e=>{ const it=e.target.closest('.ss-it'); if(it) pilih(vis[+it.dataset.i]); });
+  pop.addEventListener('click',e=>e.stopPropagation());
+  tulis();
+}
+document.addEventListener('click',()=>document.querySelectorAll('.ss.open').forEach(x=>x.classList.remove('open')));
 function buildFilters(){
   const opt=(vals,cur)=>vals.map(v=>`<option value="${esc(v)}"${v===cur?' selected':''}>${esc(v)}</option>`).join('');
   const sel=(id,label,vals,cur,all='Semua')=>`<div class="fld"><label for="${id}">${label}</label><select id="${id}"><option value="">${all}</option>${opt(vals,cur)}</select></div>`;
@@ -1621,6 +1656,7 @@ function buildFilters(){
   [['fRegion','region'],['fStasiun','stasiun'],['fRca','rca'],['fMitra','mitra'],['fKat','kategori'],['fSumber','sumber'],['fStatus','status'],['fSla','sla'],['fWoFrom','woFrom'],['fWoTo','woTo'],['fVFrom','vFrom'],['fVTo','vTo']].forEach(([id,k])=>{
     const el=$(id); if(el) el.addEventListener('change',e=>{ F[k]=e.target.value||(k==='status'?'all':''); page=1; applyFilters(); });
   });
+  document.querySelectorAll('#fGrid select').forEach(cariSelect);
   $('searchInput').value=F.q;
   const ms=uniqSorted(ALL_ROWS.map(r=>r.mitra)); if(MITRA_SEL&&!ms.includes(MITRA_SEL)) MITRA_SEL='';
   $('mitraList').innerHTML=ms.map(v=>`<option value="${esc(v)}"></option>`).join(''); $('mitraTop').value=MITRA_SEL;
@@ -1761,20 +1797,31 @@ function renderDaily(){
   const allDays=days.slice(); const sh=DAILY_RANGE>0?allDays.slice(-DAILY_RANGE):allDays; days.length=0; sh.forEach(d=>days.push(d));
   document.querySelectorAll('#dailyRange button').forEach(b=>b.classList.toggle('on',+b.dataset.n===DAILY_RANGE));
   $('dailySub').textContent=(MITRA_SEL?MITRA_SEL+' · ':'')+`${days.length} hari terakhir · CLOSE ${nf(sum('c'))} · OPEN ${nf(sum('o'))} · CANCEL ${nf(sum('x'))} · rata-rata CLOSE ${nf(Math.round(sum('c')/Math.max(1,days.length)))} per hari`;
-  $('dailyNote').innerHTML='WO CLOSE dihitung per tanggal <b>Visit Completed Time (K)</b>. WO OPEN dan CANCEL dihitung per tanggal WO dibuat. Klik batang untuk membuka daftar WO CLOSE pada tanggal itu di menu Detail WO Visit.';
+  $('dailyNote').innerHTML='WO CLOSE dihitung per tanggal <b>Visit Completed Time (K)</b>. WO OPEN dan CANCEL dihitung per tanggal WO dibuat. Sumbu kiri = WO CLOSE, sumbu kanan = WO OPEN & CANCEL. Klik titik grafik untuk membuka daftar WO CLOSE pada tanggal itu di menu Detail WO Visit.';
   emptyChart('dailyBox','chDaily','Belum ada data tanggal.',!days.length);
   if(!chartBase()) return; destroy('daily'); if(!days.length) return;
-  const wrap=$('dailyScroll'), width=Math.max(wrap.clientWidth-16,days.length*(days.length<=14?76:days.length<=31?56:34));
+  // v21: grafik garis + area gradasi. CLOSE di sumbu kiri; OPEN & CANCEL (angkanya kecil) di sumbu kanan agar tetap terlihat.
+  const wrap=$('dailyScroll'), per=days.length<=14?64:days.length<=31?40:days.length<=60?26:16, width=Math.max(wrap.clientWidth-16,days.length*per);
   $('dailyBox').style.width=width+'px';
+  const hint=$('dailyHint'); if(hint) hint.style.display=width>wrap.clientWidth?'':'none';
   const dpr=Math.min(window.devicePixelRatio||1, 30000/width);
-  charts.daily=new Chart($('chDaily'),{ type:'bar', plugins:days.length<=31?[barLabels]:[],
+  const grad=(warna,a1,a2)=>ctx=>{ const c=ctx.chart, A=c.chartArea; if(!A) return warna+'33'; const g=c.ctx.createLinearGradient(0,A.top,0,A.bottom); g.addColorStop(0,warna+a1); g.addColorStop(1,warna+a2); return g; };
+  const sedikit=days.length<=31, titik=sedikit?3:0;
+  const garis=(label,data,warna,sumbu,isi)=>({label,data,yAxisID:sumbu,borderColor:warna,backgroundColor:isi?grad(warna,'59','03'):warna,fill:isi?'origin':false,
+    tension:.38,cubicInterpolationMode:'monotone',borderWidth:isi?2.6:2,pointRadius:titik,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderColor:warna,pointBorderWidth:2,borderDash:label==='WO CANCEL'?[5,4]:[]});
+  const labelAtas={ id:'labelAtas', afterDatasetsDraw(chart){ if(!sedikit) return; const {ctx}=chart, m=chart.getDatasetMeta(0); ctx.save(); ctx.font='600 10.5px Inter,sans-serif'; ctx.fillStyle=isDark()?'#A7F3D0':'#14785A'; ctx.textAlign='center';
+    m.data.forEach((pt,i)=>{ const v=chart.data.datasets[0].data[i]; if(v) ctx.fillText(nf(v),pt.x,pt.y-9); }); ctx.restore(); } };
+  charts.daily=new Chart($('chDaily'),{ type:'line', plugins:[labelAtas],
     data:{ labels:days.map(k=>{const[y,m,dd]=k.split('-');return `${HARI[new Date(+y,+m-1,+dd).getDay()]} ${dd}/${m}`;}), datasets:[
-      {label:'WO CLOSE',data:days.map(k=>get(k,'c')),backgroundColor:C_CLOSE,borderRadius:3},
-      {label:'WO OPEN',data:days.map(k=>get(k,'o')),backgroundColor:C_OPEN,borderRadius:3},
-      {label:'WO CANCEL',data:days.map(k=>get(k,'x')),backgroundColor:C_CANCEL,borderRadius:3} ] },
-    options:{ responsive:true, maintainAspectRatio:false, devicePixelRatio:dpr, layout:{padding:{top:18}}, interaction:{mode:'index',intersect:false},
-      plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10}}},
-      scales:{ x:{grid:{display:false},ticks:{maxRotation:60,autoSkip:false}}, y:{beginAtZero:true,grace:'8%',grid:{color:GRID},ticks:{precision:0}} },
+      garis('WO CLOSE',days.map(k=>get(k,'c')),C_CLOSE,'y',true),
+      garis('WO OPEN',days.map(k=>get(k,'o')),C_OPEN,'y2',true),
+      garis('WO CANCEL',days.map(k=>get(k,'x')),C_CANCEL,'y2',false) ] },
+    options:{ responsive:true, maintainAspectRatio:false, devicePixelRatio:dpr, layout:{padding:{top:22,right:6}}, interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8,padding:16}},
+        tooltip:{padding:10,boxPadding:4,usePointStyle:true,callbacks:{footer:it=>'Total: '+nf(it.reduce((s,x)=>s+(x.parsed.y||0),0))}}},
+      scales:{ x:{grid:{display:false},ticks:{maxRotation:60,autoSkip:!sedikit,maxTicksLimit:sedikit?undefined:Math.ceil(width/60)}},
+        y:{beginAtZero:true,grace:'12%',grid:{color:GRID},ticks:{precision:0},title:{display:true,text:'WO CLOSE',color:C_CLOSE,font:{weight:600}}},
+        y2:{position:'right',beginAtZero:true,grace:'25%',grid:{display:false},ticks:{precision:0},title:{display:true,text:'WO OPEN / CANCEL',color:C_OPEN,font:{weight:600}}} },
       onClick:(e,els)=>{ if(els.length){ DC.date=days[els[0].index]; DC.page=1; showView('detail'); const s=$('dailyCloseSec'); if(s&&s.scrollIntoView) s.scrollIntoView({behavior:'smooth',block:'start'}); } } } });
   wrap.scrollLeft=wrap.scrollWidth;
   const tb=days.slice().reverse().map(k=>{ const c=get(k,'c'),o=get(k,'o'),x=get(k,'x'); const d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10)); return `<tr data-d="${k}"${k===todayK?' class="sel"':''}><td class="nw">${HARI[d.getDay()]}, ${fmtDate(d)}${k===todayK?' <span class="b b-ok">Hari ini</span>':''}</td><td class="num" style="color:var(--green-ink);font-weight:700">${nf(c)}</td><td class="num" style="color:var(--blue);font-weight:700">${nf(o)}</td><td class="num" style="color:var(--red-ink);font-weight:700">${nf(x)}</td><td class="num"><b>${nf(c+o+x)}</b></td></tr>`; }).join('');
@@ -1968,6 +2015,7 @@ function renderKmBar(){
     <div class="fld" style="align-self:end;font-size:12px;color:var(--mute)">${KM.stn?'Menilai '+(KM.by==='stasiun'?'stasiun':'mitra')+' di stasiun <b>'+esc(KM.stn)+'</b> saja':'Semua stasiun'}</div>`;
   $('kmBy').onchange=e=>{ KM.by=e.target.value; KM.tier='all'; renderKpiMitra(); };
   $('kmStn').onchange=e=>{ KM.stn=e.target.value; KM.tier='all'; renderKpiMitra(); };
+  cariSelect($('kmStn'));
 }
 function calcMitra(){
   const by={};
