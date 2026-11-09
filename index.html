@@ -726,9 +726,9 @@ details.fu{border:1px solid var(--line);border-radius:14px;background:var(--card
    KONFIGURASI
    ============================================================ */
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2jBfzspPE7Rd8ICB5O9MnRKlWbBA03zMW0EP50ZZE1QBKkOqyEPPalrdBtUK6A2RQAbhjICwzEE9i/pub?gid=585283091&single=true&output=csv";
-const AUTO_REFRESH_MINUTES = 1;
+const AUTO_REFRESH_MINUTES = 5; // v20: pembaruan utama mengikuti StatusSinkron (dicek tiap 30 dtk); ini hanya pengaman
 const USER_NAME = 'Dimas';
-const LS_MAP = 'starlite_wovisit_colmap_v1', LS_DEDUP = 'starlite_wovisit_dedup_v2'; // v19: default hitung semua baris (= Metabase)
+const LS_MAP = 'starlite_wovisit_colmap_v2', LS_DEDUP = 'starlite_wovisit_dedup_v2'; // v19: default hitung semua baris (= Metabase)
 /* Kolom tetap (index 0 = A): D Status, H Status SLA, AF Action Description, AV Kerusakan Karena, AW Tipe Damage */
 const POS = { tgl_create:0, tgl_complete:10, status:3, sla:7, action_desc:31, kerusakan:47, tipe_damage:48 };
 
@@ -1105,8 +1105,11 @@ function showErr(m){ const e=$('errBanner'); e.textContent=m; e.classList.add('s
 function clearErr(){ $('errBanner').classList.remove('show'); }
 let CSV_OVR=''; try{ CSV_OVR=''; localStorage.removeItem('starlite_csv'); }catch(e){}
 function csvUrls(){ const L=[]; if(CSV_OVR){ L.push(CSV_OVR, CSV_OVR+(CSV_OVR.includes('?')?'&':'?')+'_=__T__'); } return L.concat(CSV_URLS_BASE); }
-const CSV_URLS_BASE=[CSV_URL+'&_=__T__', CSV_URL, "https://docs.google.com/spreadsheets/d/1Ki9oR-ODT7unF35LXDKR5fRFKxWSe87ckTVZLyzMz9M/gviz/tq?tqx=out:csv&gid=585283091"];
-const FETCH_TIMEOUT=30000; // v19: CSV 33rb+ baris kadang >12 dtk
+/* v20: sumber utama = baca Spreadsheet langsung (gviz, tanpa cache publish ±5 menit). WAJIB headers=1:
+   tanpa itu Google bisa menggabungkan ratusan baris data menjadi judul kolom (bug "Problem Description ...", "(Tanpa Mitra)"). */
+const GVIZ_URL="https://docs.google.com/spreadsheets/d/1Ki9oR-ODT7unF35LXDKR5fRFKxWSe87ckTVZLyzMz9M/gviz/tq?tqx=out:csv&gid=585283091&headers=1";
+const CSV_URLS_BASE=[GVIZ_URL+'&_=__T__', CSV_URL+'&_=__T__'];
+const FETCH_TIMEOUT=60000; // v20: data 33rb+ baris; data lama tetap tampil selama memuat
 function fetchTimeout(u,ms){
   const LIM=ms||FETCH_TIMEOUT;
   return new Promise((ok,no)=>{
@@ -1116,12 +1119,30 @@ function fetchTimeout(u,ms){
       .then(x=>{ clearTimeout(t); ok(x); },e=>{ clearTimeout(t); no(e); });
   });
 }
+/* v20: data dicek dulu sebelum dipakai (judul kolom wajar + jumlah baris sesuai Spreadsheet). Data rusak -> sumber berikutnya,
+   semua gagal -> data lama tetap tampil. */
+let LAST_ROWS=0;
+function cekData(data){
+  if(!data||data.length<2) return 'data kosong';
+  const h=data[0].map(x=>String(x==null?'':x));
+  if(h.some(x=>x.length>150)) return 'judul kolom tercampur data';
+  const n=h.map(x=>x.toLowerCase().replace(/[^a-z0-9]/g,''));
+  if(!n.some(x=>x.includes('createdat')||x.includes('tanggalcreate')||x.includes('tglcreate'))||!n.some(x=>x.includes('statuscategory')||x==='status')) return 'judul kolom tidak dikenali';
+  const rows=data.length-1, exp=SYNC&&SYNC.d?Number(SYNC.d.sheet_total||0):0;
+  if(exp>0&&rows<exp*0.98) return 'baris kurang ('+rows+' dari '+exp+')';
+  if(!exp&&LAST_ROWS&&rows<LAST_ROWS*0.9) return 'baris kurang ('+rows+' dari '+LAST_ROWS+')';
+  return '';
+}
 async function fetchCsv(){
   let lastErr=null;
   for(const u0 of csvUrls()){
     const u=u0.replace('__T__',Date.now());
     try{ const t=await fetchTimeout(u);
-      if(/^\s*<(!doctype|html)/i.test(t)) throw new Error('Respons bukan CSV (sheet tidak publik?)'); return t; }catch(e){ lastErr=e; }
+      if(/^\s*<(!doctype|html)/i.test(t)) throw new Error('Respons bukan CSV (sheet tidak publik?)');
+      const res=Papa.parse(t,{skipEmptyLines:true}), salah=cekData(res.data);
+      if(salah) throw new Error(salah);
+      return {txt:t,data:res.data};
+    }catch(e){ lastErr=e; console.warn('sumber data',u0.slice(0,60),e&&e.message); }
   }
   throw lastErr||new Error('Tidak dapat terhubung');
 }
@@ -1129,7 +1150,7 @@ async function fetchCsv(){
 function idb(){ return new Promise((ok,no)=>{ try{ const q=indexedDB.open('starlite_wo_cache',1); q.onupgradeneeded=()=>q.result.createObjectStore('kv'); q.onsuccess=()=>ok(q.result); q.onerror=()=>no(q.error); }catch(e){ no(e); } }); }
 function cacheSet(txt){ idb().then(d=>{ const tx=d.transaction('kv','readwrite'); tx.objectStore('kv').put({txt,ts:Date.now()},'csv'); }).catch(()=>{}); }
 function cacheGet(){ return idb().then(d=>new Promise(ok=>{ const q=d.transaction('kv').objectStore('kv').get('csv'); q.onsuccess=()=>ok(q.result||null); q.onerror=()=>ok(null); })).catch(()=>null); }
-let RETRY_T=null, LOAD_TICK=null, HAS_DATA=false;
+let RETRY_T=null, LOAD_TICK=null, HAS_DATA=false, FAILS=0;
 let LD={txt:'Menghubungkan ke Spreadsheet',pct:6};
 function ldStage(t,pct){ LD.txt=t; if(pct!=null) LD.pct=pct; const b=$('ldBar'); if(b) b.style.width=LD.pct+'%'; const x=$('loadTxt'); if(x&&!window.__ldFail) x.textContent=t+'…'; }
 function stopLoadUi(){ clearInterval(LOAD_TICK); LOAD_TICK=null; const l=$('loading'); if(l.style.display==='none') return; ldStage('Siap',100); l.classList.add('out'); setTimeout(()=>{ l.style.display='none'; l.classList.remove('out'); },450); }
@@ -1142,17 +1163,20 @@ function loadData(showLoader,manual){
   const done=()=>{ if(finished) return; finished=true; clearTimeout(wd); loading=false; $('refreshBtn').disabled=false; stopLoadUi(); };
   const fail=err=>{
     console.error(err); if(finished) return;
+    FAILS++;
+    if(HAS_DATA&&FAILS<2){ setStatus(false); done(); RETRY_T=setTimeout(()=>loadData(false),30000); return; }
     const e=$('errBanner'); e.innerHTML='Gagal memuat Spreadsheet ('+esc(err&&err.message||'jaringan')+')'+(HAS_DATA?'. Menampilkan data terakhir. ':'. ')+'Mencoba lagi otomatis tiap 30 detik. <button class="lnk" id="errRetry">coba lagi sekarang</button> atau <button class="lnk" id="errUpload">muat file CSV</button>.';
     e.classList.add('show'); $('errRetry').onclick=()=>loadData(true); $('errUpload').onclick=()=>$('fileInput').click();
     setStatus(false); done(); RETRY_T=setTimeout(()=>loadData(false),30000);
   };
-  const wd=setTimeout(()=>fail(new Error('proses terlalu lama')),90000);
-  fetchCsv().then(async txt=>{
-    if(finished) return; LAST_FETCH=Date.now();
+  const wd=setTimeout(()=>fail(new Error('proses terlalu lama')),150000);
+  fetchCsv().then(async got=>{
+    if(finished) return; LAST_FETCH=Date.now(); FAILS=0;
+    const txt=got.txt;
     if(txt===LAST_TXT&&HAS_DATA){ clearErr(); setStatus(true); fetchMb(); fetchLive(); if(manual) toast('Data sudah terbaru'); done(); return; }
     const vis=showLoader&&!HAS_DATA, tick=()=>new Promise(r=>setTimeout(r,40));
     if(vis){ ldStage('Data diterima · membaca tabel',86); await tick(); }
-    const res=Papa.parse(txt,{skipEmptyLines:true});
+    const res={data:got.data}; LAST_ROWS=got.data.length-1;
     if(vis){ ldStage('Memproses '+nf(res.data.length-1)+' baris WO',93); await tick(); }
     clearErr(); handleParsed(res.data); restoreScroll(); HAS_DATA=true; LAST_TXT=txt; setStatus(true); cacheSet(txt); if(manual) toast('Data diperbarui'); done(); fetchMb(); fetchLive();
   }).catch(fail);
@@ -1255,12 +1279,17 @@ async function fetchSync(){
     const d={}; Papa.parse(t.trim()).data.forEach(r=>{ if(r&&r.length>=2&&r[0]&&r[0]!=='kunci') d[String(r[0]).trim()]=String(r[1]==null?'':r[1]).trim(); });
     if(!d.mb_total) throw new Error('StatusSinkron kosong');
     SYNC.d=d; SYNC.ts=new Date(); SYNC.err='';
+    // v20: Spreadsheet baru selesai di-update oleh Apps Script -> muat ulang data dashboard
+    const ver=d.update_iso||d.update_wib||'';
+    if(ver&&ver!==SYNC_VER){ const awal=!SYNC_VER; SYNC_VER=ver; if(!awal&&HAS_DATA) loadData(false); }
   }catch(e){ SYNC.err=String(e&&e.message||e); }
   if(VIEW==='dashboard') renderSync();
 }
+let SYNC_VER='';
 function syncScopeDefault(){ return (!SCOPE.from||SCOPE.from<='2026-05-01') && (!SCOPE.to||SCOPE.to>=dayKey(new Date())) && SCOPE.kat===null && !SCOPE.tiket; }
 function renderSync(){
   const el=$('mbStrip'); if(!el) return;
+  el.classList.remove('show'); el.innerHTML=''; return; // v20: kotak Sinkron Metabase disembunyikan (permintaan); angka tetap dicek di sheet DashboardWO
   if(VIEW!=='dashboard'||!SYNC.d||!ALL_ROWS.length){ el.classList.remove('show'); el.innerHTML=''; return; }
   const d=SYNC.d, n=k=>Number(d[k]||0), A=ALL_ROWS;
   const db={total:A.length, close:A.filter(r=>r.st==='SELESAI').length, cancel:A.filter(r=>r.st==='CANCEL').length, over:A.filter(r=>r.sla==='OVER').length}; db.open=db.total-db.close-db.cancel;
@@ -1280,7 +1309,7 @@ function renderSync(){
    <div class="mb-grid">${it.map(([k,l])=>cell(l,mb[k],db[k])).join('')}${cell('Over SLA (info)',mb.over,db.over)}</div>
    <div style="margin-top:8px;font-size:11.5px;color:var(--mute)">WO OPEN = Rescheduled + Sedang Dikerjakan + Sudah Assign + Sudah Distribusi · WO CLOSE = Sudah Selesai · WO CANCEL = Di Batalkan.${note?' <b style="color:var(--ink)">'+esc(note)+'</b>':''}</div>`;
 }
-fetchSync(); setInterval(()=>{ if(!document.hidden) fetchSync(); },60*1000);
+fetchSync(); setInterval(()=>{ if(!document.hidden) fetchSync(); },30*1000);
 /* ---------- Summary Weekly CS ---------- */
 const BLN_F=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const WK={pre:'rep',from:'',to:'',mitra:'',region:'',kat:'',grp:'',minN:1,init:false};
@@ -1491,7 +1520,7 @@ function renderSumber(){
       <div class="u">OPEN ${nf(rs.filter(isOpen).length)} · CLOSE ${nf(c.SELESAI)} · CANCEL ${nf(c.CANCEL)} · Open Over SLA ${nf(over)}</div></button>`; };
   el.innerHTML=`<div class="panel-head"><div><h2>Sumber Pembuatan WO</h2><div class="sub">AIDC = WO dibuat dari endpoint AIDC (Mohon periksa: RX Abnormal, Masalah: Sinyal Optik Lemah) · selain itu = dibuat dari Mekari / CS</div></div></div>
     <div class="wk-cards" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">${card(SRC_AIDC,'#7C3AED')}${card(SRC_CS,'#2556D9')}</div>
-    <div class="count" style="margin-top:8px">${SRC_MODE==='text'?'Dibaca dari kolom "'+esc(HEADERS[SRC_COL]||('kolom '+(SRC_COL+1)))+'". ':'Kolom teks "dibuat dari endpoint AIDC" tidak ditemukan; sementara dibaca dari kolom Dibuat oleh / Nama IKR. '}Klik kartu untuk melihat daftar WO.</div>`;
+    <div class="count" style="margin-top:8px">${SRC_MODE==='text'?'Dibaca dari kolom "'+esc(String(HEADERS[SRC_COL]||('kolom '+(SRC_COL+1))).slice(0,60))+'". ':'Kolom teks "dibuat dari endpoint AIDC" tidak ditemukan; sementara dibaca dari kolom Dibuat oleh / Nama IKR. '}Klik kartu untuk melihat daftar WO.</div>`;
   el.querySelectorAll('.src-c').forEach(b=>b.addEventListener('click',()=>toTable({sumber:b.dataset.k})));
 }
 /* ============================================================
