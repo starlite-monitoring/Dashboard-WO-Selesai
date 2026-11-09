@@ -727,7 +727,7 @@ details.fu{border:1px solid var(--line);border-radius:14px;background:var(--card
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2jBfzspPE7Rd8ICB5O9MnRKlWbBA03zMW0EP50ZZE1QBKkOqyEPPalrdBtUK6A2RQAbhjICwzEE9i/pub?gid=585283091&single=true&output=csv";
 const AUTO_REFRESH_MINUTES = 1;
 const USER_NAME = 'Dimas';
-const LS_MAP = 'starlite_wovisit_colmap_v1', LS_DEDUP = 'starlite_wovisit_dedup_v1';
+const LS_MAP = 'starlite_wovisit_colmap_v1', LS_DEDUP = 'starlite_wovisit_dedup_v2'; // v19: default hitung semua baris (= Metabase)
 /* Kolom tetap (index 0 = A): D Status, H Status SLA, AF Action Description, AV Kerusakan Karena, AW Tipe Damage */
 const POS = { tgl_create:0, tgl_complete:10, status:3, sla:7, action_desc:31, kerusakan:47, tipe_damage:48 };
 
@@ -789,7 +789,7 @@ const SLA_L = { OVER:'Over SLA', OK:'Dalam SLA', NA:'Tidak ada data' };
    ============================================================ */
 let HEADERS=[], RAW=[], COLMAP={}, MAP_KEY='';
 let ALL_ROWS=[], FILTERED=[], HIST={}, STATUS_COUNTS={}, SLA_COUNTS={}, DUP_ROWS=0, UNIQ_WO=0;
-let DEDUP=true; try{ const s=localStorage.getItem(LS_DEDUP); if(s!==null) DEDUP = s==='1'; }catch(e){}
+let DEDUP=false; try{ const s=localStorage.getItem(LS_DEDUP); if(s!==null) DEDUP = s==='1'; }catch(e){}
 const F0 = { sumber:'', status:'all', sla:'', region:'', stasiun:'', rca:'', mitra:'', kategori:'', q:'', woFrom:'', woTo:'', vFrom:'', vTo:'' };
 let F = Object.assign({}, F0);
 let VIEW='dashboard', MITRA_SEL='';
@@ -799,7 +799,7 @@ try{ OVR=JSON.parse(localStorage.getItem(LS_OVR)||'{}')||{}; }catch(e){ OVR={}; 
 function saveOvr(){ try{ localStorage.setItem(LS_OVR,JSON.stringify(OVR)); return true; }catch(e){ toast('Penyimpanan browser diblokir; koreksi hanya berlaku selama halaman terbuka'); return false; } }
 function applyOvr(r){ r.rca=r.rca0; r.review=r.review0; r.why=r.why0; r.manual=false; const o=OVR[r.id]; r.ovr=o||null; if(o&&(r.st==='SELESAI'||r.st==='CANCEL')&&o.rca){ r.rca=o.rca; r.review=false; r.manual=true; r.why='RCA diisi manual'; } }
 const NAV=[['dashboard','layout-dashboard','Dashboard WO Visit'],['detail','clipboard-list','Detail WO Visit'],['kpi','trophy','KPI Mitra'],['followup','send','Follow Up Mitra'],['weekly','file-text','Summary Weekly CS']];
-const LS_SCOPE='starlite_scope_v2';
+const LS_SCOPE='starlite_scope_v3'; // v19: cakupan lama di browser direset ke cakupan Metabase
 let KAT_ANY=true, SCOPE={from:'2026-05-01',to:'2027-01-31',kat:null,tiket:''}, SCOPE_INFO={raw:0,after:0,kats:{},tikets:{}};
 try{ const sc=JSON.parse(localStorage.getItem(LS_SCOPE)||'null'); if(sc) SCOPE=Object.assign(SCOPE,sc); }catch(e){}
 const katDefault=k=>{ const n=norm(k); return n.includes('pengecekan')||n.includes('penggantiont')||n.includes('replaceont')||n.includes('tasklainnya'); };
@@ -874,6 +874,15 @@ function statusKey(raw){
   if(/sched|jadwal|assign|dispatch/.test(s)) return 'JADWAL';
   if(/open|baru|new|belum|unassign|created|queue|antri|pending/.test(s)) return 'BELUM';
   return 'LAINNYA';
+}
+/* v19: status persis seperti Metabase -> CLOSE = WO Sudah Selesai · CANCEL = WO Di Batalkan ·
+   OPEN = WO Di Rescheduled, WO Sedang Dikerjakan, WO Sudah Assign, WO Sudah Distribusi (dan status lain) */
+const ST_CLOSE_EXACT=['wo sudah selesai'], ST_CANCEL_EXACT=['wo di batalkan'];
+function statusExact(raw){
+  const n=String(raw||'').toLowerCase().replace(/\s+/g,' ').trim();
+  if(ST_CLOSE_EXACT.includes(n)) return 'SELESAI';
+  if(ST_CANCEL_EXACT.includes(n)) return 'CANCEL';
+  const k=statusKey(raw); return (k==='SELESAI'||k==='CANCEL')?'LAINNYA':k;
 }
 /* WO yang belum selesai: Action Description (AF) bisa menunjukkan gagal visit / visit ulang / menunggu pelanggan */
 function refineFromAf(st, af){
@@ -1218,8 +1227,8 @@ async function fetchMb(){ MB.data=null; return; // v18: angka dashboard SELALU d
   if(VIEW==='dashboard'){ try{ renderKpi(); renderStatus(); renderHero(); refreshIcons(); }catch(e){ console.error(e); } }
 }
 const mbUse=()=>null; // v18: tanpa override Metabase
-function renderMb(){
-  const el=$('mbStrip'); if(!el) return; el.classList.remove('show'); el.innerHTML=''; return;
+function renderMb(){ renderSync(); return; // v19: strip diganti renderSync (StatusSinkron)
+  const el=$('mbStrip'); if(!el) return;
   if(VIEW!=='dashboard'){ el.classList.remove('show'); return; }
   el.classList.add('show');
   if(!MB.data){
@@ -1234,6 +1243,43 @@ function renderMb(){
   const u=$('mbUse'); if(u) u.onchange=()=>{ USE_MB=u.checked; try{ localStorage.setItem('starlite_usemb',USE_MB?'1':'0'); }catch(e){} renderKpi(); renderStatus(); renderHero(); refreshIcons(); };
 }
 setInterval(()=>{ if(!document.hidden) fetchMb(); },60*1000);
+/* ---------- v19: Sinkron Metabase (sheet StatusSinkron ditulis Apps Script v16 tiap 10 menit) ---------- */
+const SYNC_URL='https://docs.google.com/spreadsheets/d/1Ki9oR-ODT7unF35LXDKR5fRFKxWSe87ckTVZLyzMz9M/gviz/tq?tqx=out:csv&sheet=StatusSinkron&headers=1';
+const CSV_GID=(CSV_URL.match(/gid=(\d+)/)||[])[1]||'';
+let SYNC={d:null,ts:null,err:''};
+async function fetchSync(){
+  try{
+    const t=await fetchTimeout(SYNC_URL+'&_='+Date.now(),15000);
+    if(/^\s*</.test(t)) throw new Error('StatusSinkron tidak terbaca');
+    const d={}; Papa.parse(t.trim()).data.forEach(r=>{ if(r&&r.length>=2&&r[0]&&r[0]!=='kunci') d[String(r[0]).trim()]=String(r[1]==null?'':r[1]).trim(); });
+    if(!d.mb_total) throw new Error('StatusSinkron kosong');
+    SYNC.d=d; SYNC.ts=new Date(); SYNC.err='';
+  }catch(e){ SYNC.err=String(e&&e.message||e); }
+  if(VIEW==='dashboard') renderSync();
+}
+function syncScopeDefault(){ return (!SCOPE.from||SCOPE.from<='2026-05-01') && (!SCOPE.to||SCOPE.to>=dayKey(new Date())) && SCOPE.kat===null && !SCOPE.tiket; }
+function renderSync(){
+  const el=$('mbStrip'); if(!el) return;
+  if(VIEW!=='dashboard'||!SYNC.d||!ALL_ROWS.length){ el.classList.remove('show'); el.innerHTML=''; return; }
+  const d=SYNC.d, n=k=>Number(d[k]||0), A=ALL_ROWS;
+  const db={total:A.length, close:A.filter(r=>r.st==='SELESAI').length, cancel:A.filter(r=>r.st==='CANCEL').length, over:A.filter(r=>r.sla==='OVER').length}; db.open=db.total-db.close-db.cancel;
+  const mb={total:n('mb_total'),open:n('mb_open'),close:n('mb_close'),cancel:n('mb_cancel'),over:d.mb_over===''?null:n('mb_over')};
+  const it=[['total','Total WO'],['open','WO OPEN'],['close','WO CLOSE'],['cancel','WO CANCEL']];
+  const sama=it.every(([k])=>db[k]===mb[k]), cakup=syncScopeDefault();
+  let note='';
+  if(CSV_GID&&d.gid_log&&CSV_GID!==d.gid_log) note='PERHATIAN: CSV dashboard (gid '+CSV_GID+') bukan sheet LogWorkOrder6 (gid '+d.gid_log+').';
+  else if(!cakup) note='Cakupan dashboard diubah (tanggal/kategori/tiket) sehingga tidak dibandingkan 1:1 dengan Metabase. Buka ikon filter kanan atas lalu Reset.';
+  else if(DEDUP) note='Pengaturan "1 baris per WO" aktif: baris dengan ID WO ganda tidak dihitung, padahal Metabase menghitungnya. Matikan di Pengaturan.';
+  else if(!sama&&n('sheet_total')!==db.total) note='Spreadsheet sudah '+nf(n('sheet_total'))+' WO, dashboard masih memuat CSV sebelumnya (cache Google ±5 menit). Otomatis sama di pembaruan berikutnya.';
+  else if(d.status!=='SINKRON') note='Apps Script sedang menutup selisih Spreadsheet vs Metabase (dicek tiap 10 menit).';
+  const badge=sama?'<span class="b b-ok">SAMA DENGAN METABASE</span>':'<span class="b b-red">SELISIH</span>';
+  const cell=(l,m,x)=>{ const df=m==null?null:x-m; return `<div class="mb-c"><div class="l">${l}</div><div class="m">${m==null?'-':nf(m)}</div><div class="s">Dashboard ${nf(x)}${df==null?'':` · <span class="d ${df===0?'ok':'bad'}">${df===0?'sama':(df>0?'+':'')+nf(df)}</span>`}</div></div>`; };
+  el.classList.add('show');
+  el.innerHTML=`<h4>Sinkron Metabase ${badge}<span style="text-transform:none;font-weight:500">Metabase dicek ${esc(d.mb_jam||d.update_wib||'')} WIB · ${esc(d.minggu_cocok||'?')}/${esc(d.minggu_total||'?')} minggu cocok</span></h4>
+   <div class="mb-grid">${it.map(([k,l])=>cell(l,mb[k],db[k])).join('')}${cell('Over SLA (info)',mb.over,db.over)}</div>
+   <div style="margin-top:8px;font-size:11.5px;color:var(--mute)">WO OPEN = Rescheduled + Sedang Dikerjakan + Sudah Assign + Sudah Distribusi · WO CLOSE = Sudah Selesai · WO CANCEL = Di Batalkan.${note?' <b style="color:var(--ink)">'+esc(note)+'</b>':''}</div>`;
+}
+fetchSync(); setInterval(()=>{ if(!document.hidden) fetchSync(); },60*1000);
 /* ---------- Summary Weekly CS ---------- */
 const BLN_F=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const WK={pre:'rep',from:'',to:'',mitra:'',region:'',kat:'',grp:'',minN:1,init:false};
@@ -1350,10 +1396,15 @@ function fuGroups(){
   const arr=Object.values(g); arr.forEach(m=>m.rows.sort((a,b)=>(a.stasiun||a.region||'').localeCompare(b.stasiun||b.region||'')||(b.umur||0)-(a.umur||0)||String(a.id).localeCompare(String(b.id))));
   return arr;
 }
+/* v19: link lampiran di pesan Follow Up. Ganti FU_LINK dengan link pendek (mis. s.id/xxxx) bila sudah dibuat; kosongkan '' untuk menghilangkan. */
+const FU_LINK='https://drive.google.com/file/d/1HLwu0dS08a_71cdEXynhqerJ7XXqlufg/view';
+const FU_LINK_LABEL='📎 *Lampiran:*';
+const FU_PENUTUP='Mohon dibantu percepatan kunjungan/visit dan Closed WO di aplikasi IKR. Terima kasih.';
+function fuTail(){ return (FU_LINK?`${FU_LINK_LABEL}\n${FU_LINK}\n\n`:'')+FU_PENUTUP; }
 function fuMsg(m){
   const rows=FU.detUrg?m.rows.filter(r=>r.sla==='OVER'):m.rows;
-  if(FU_IKR.test(m.name)&&rows.some(r=>r.ikrp)) return ikrMsg({title:'ESKALASI WO VISIT',name:m.name,short:'TBG',unit:'WO Visit',rows,urgent:m.urgent,tail:'Mohon dibantu percepatan kunjungan/visit dan Closed WO di aplikasi IKR. Terima kasih.'});
-  return `🚨 *ESKALASI WO VISIT* 🚨\n\n📋 *Ringkasan* :\n*${m.name}*\n- ${nf(m.rows.length)} WO Visit Open\n- Urgent (≥ SLA) : ${nf(m.urgent)}\n\n*Detail per ID pelanggan:*\n`+rows.map(r=>`- ${r.stasiun||r.region||'-'} - ${r.cust||r.id} - ${r.nama||'-'}`).join('\n')+`\n\nMohon dibantu percepatan kunjungan/visit dan Closed WO di aplikasi IKR. Terima kasih.`;
+  if(FU_IKR.test(m.name)&&rows.some(r=>r.ikrp)) return ikrMsg({title:'ESKALASI WO VISIT',name:m.name,short:'TBG',unit:'WO Visit',rows,urgent:m.urgent,tail:fuTail()});
+  return `🚨 *ESKALASI WO VISIT* 🚨\n\n📋 *Ringkasan* :\n*${m.name}*\n- ${nf(m.rows.length)} WO Visit Open\n- Urgent (≥ SLA) : ${nf(m.urgent)}\n\n*Detail per ID pelanggan:*\n`+rows.map(r=>`- ${r.stasiun||r.region||'-'} - ${r.cust||r.id} - ${r.nama||'-'}`).join('\n')+`\n\n`+fuTail();
 }
 function renderFollowUp(){
   const root=$('v-followup'), all=fuGroups(), q=FU.q.toLowerCase();
@@ -1444,7 +1495,7 @@ function processRows(){
   const today=new Date(); today.setHours(0,0,0,0);
   detectSrc();
   let rows=RAW.map((r,i)=>{
-    const statusRaw=g(r,'status'), base=statusKey(statusRaw), af=g(r,'action_desc');
+    const statusRaw=g(r,'status'), base=statusExact(statusRaw), af=g(r,'action_desc');
     const rf=refineFromAf(base,af), st=rf.st;
     const sk=statusRaw||'(kosong)'; STATUS_COUNTS[sk]=STATUS_COUNTS[sk]||{n:0,map:base}; STATUS_COUNTS[sk].n++;
     const slaRaw=g(r,'sla'), sla=slaKey(slaRaw), lk=slaRaw||'(kosong)'; SLA_COUNTS[lk]=SLA_COUNTS[lk]||{n:0,map:sla}; SLA_COUNTS[lk].n++;
@@ -1605,7 +1656,7 @@ function renderKpi(){
   const card=(key,label,val,sub,cls,link)=>`<button class="k8 ${cls}" data-k="${key}"><span class="top"><span class="l">${label}</span><span class="ico">${ic(KI[key])}</span></span><span class="n">${val}</span><span class="s">${sub}</span><span class="go">${link?'Lihat detail →':'&nbsp;'}</span></button>`;
   $('kpiGrid').innerHTML=
     card('MITRA','Jumlah Mitra',nf(mitraN),'Mitra unik','c-blue',true)+
-    card('ALL','Total WO',nf(tot),M?'Sumber: Metabase':'WO unik','',true)+
+    card('ALL','Total WO',nf(tot),M?'Sumber: Metabase':(DEDUP?'WO unik':'Semua baris · = Metabase'),'',true)+
     card('CLOSE','WO CLOSE',nf(close),pct(close,tot)+' dari total WO','c-green',true)+
     card('OPEN','WO OPEN',nf(open),pct(open,tot)+' dari total · belum selesai','c-red',true)+
     card('CANCEL','WO CANCEL',nf(cancel),pct(cancel,tot)+' dari total WO','c-gray',true)+
