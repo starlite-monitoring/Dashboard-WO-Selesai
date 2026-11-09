@@ -687,6 +687,7 @@ details.fu{border:1px solid var(--line);border-radius:14px;background:var(--card
     
       </div>
       <div class="view" id="v-kpi">
+      <section class="card panel sec0" style="margin-bottom:14px"><div class="kmset" id="kmBar" style="margin:0"></div></section>
       <section class="tiers sec0" id="kmTiers"></section>
       <section class="two two-eq sec">
         <div class="card panel"><div class="panel-head"><div><h2>Mitra terbaik</h2><div class="sub">Skor tertinggi dengan volume WO yang cukup</div></div></div><div id="kmBest"></div></div>
@@ -1105,7 +1106,7 @@ function clearErr(){ $('errBanner').classList.remove('show'); }
 let CSV_OVR=''; try{ CSV_OVR=''; localStorage.removeItem('starlite_csv'); }catch(e){}
 function csvUrls(){ const L=[]; if(CSV_OVR){ L.push(CSV_OVR, CSV_OVR+(CSV_OVR.includes('?')?'&':'?')+'_=__T__'); } return L.concat(CSV_URLS_BASE); }
 const CSV_URLS_BASE=[CSV_URL+'&_=__T__', CSV_URL, "https://docs.google.com/spreadsheets/d/1Ki9oR-ODT7unF35LXDKR5fRFKxWSe87ckTVZLyzMz9M/gviz/tq?tqx=out:csv&gid=585283091"];
-const FETCH_TIMEOUT=12000;
+const FETCH_TIMEOUT=30000; // v19: CSV 33rb+ baris kadang >12 dtk
 function fetchTimeout(u,ms){
   const LIM=ms||FETCH_TIMEOUT;
   return new Promise((ok,no)=>{
@@ -1381,11 +1382,16 @@ function stnGroups(rows){
   grp.forEach(g=>{ g.rows=rows.filter(r=>g.names.includes(r.stasiun||r.region||'(Tanpa Stasiun)')); });
   return grp;
 }
+/* v19: "TBG_LAMORA PUTRA PERKASA_SAMONG_ST.COMAL" -> "TBG_LAMORA PUTRA PERKASA" (kabupaten/kota & stasiun dibuang) */
+function ikrpPendek(v){
+  const p=String(v||'').replace(/\s+/g,' ').trim().split('_').map(x=>x.trim()).filter(Boolean);
+  return p.length>=2?p[0]+'_'+p[1]:(p[0]||'');
+}
 function ikrMsg(o){
   const L=[`🚨 *${o.title}* 🚨`,'',`📋 *Ringkasan* :`,`*${o.name}*`,`- ${nf(o.rows.length)} ${o.unit} Open`,`- Urgent (≥ SLA) : ${nf(o.urgent)}`,''];
   stnGroups(o.rows).forEach(g=>{
     L.push(`*WO OPEN ${o.short||o.name} STASIUN ${g.names.join(' & ')}* (${nf(g.rows.length)} WO)`);
-    const ik={}, lab={}; g.rows.forEach(r=>{ const raw=String(r.ikrp||'').replace(/\s+/g,' ').trim()||'(IKR Partner tidak tercatat)', k=raw.toUpperCase(); lab[k]=lab[k]||raw; (ik[k]=ik[k]||[]).push(r); });
+    const ik={}, lab={}; g.rows.forEach(r=>{ const raw=ikrpPendek(r.ikrp)||'(IKR Partner tidak tercatat)', k=raw.toUpperCase(); lab[k]=lab[k]||raw; (ik[k]=ik[k]||[]).push(r); });
     Object.keys(ik).sort((a,b)=>ik[b].length-ik[a].length||a.localeCompare(b)).forEach(k=>L.push(`- ${lab[k]}: ${nf(ik[k].length)} WO → ${ik[k].map(r=>r.cust||r.id).join(', ')}`));
     L.push('');
   });
@@ -1436,11 +1442,13 @@ function renderHero(){
   if(M){ tot=M.total; close=M.close; cancel=M.cancel; open=M.open; ov=M.over; }
   const cr=tot?close/tot*100:0, tk=dayKey(new Date()), todayN=ALL_ROWS.filter(r=>r.st==='SELESAI'&&compDay(r)===tk).length;
   const urgM=new Set(ALL_ROWS.filter(r=>isOpen(r)&&r.sla==='OVER').map(r=>r.mitra)).size;
+  // v19: kartu biru = WO yang DIBUAT hari ini (mengikuti filter mitra di atas)
+  const hr=base.filter(r=>r.rel&&dayKey(r.rel)===tk), hi={tot:hr.length,close:hr.filter(r=>r.st==='SELESAI').length,cancel:hr.filter(r=>r.st==='CANCEL').length,ov:hr.filter(r=>r.sla==='OVER').length}; hi.open=hi.tot-hi.close-hi.cancel;
   const tile=(l,v,c,pc)=>`<div class="ht"><div class="hl">${l}</div><div class="hv">${nf(v)}</div><div class="hb"><i style="width:${Math.min(100,pc).toFixed(1)}%;background:${c}"></i></div><div class="hp">${pc.toFixed(1).replace('.',',')}%</div></div>`;
   const h=new Date().getHours(), sal=h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam';
-  el.innerHTML=`<div class="hero-l"><div class="hero-k">${sal}</div><h2>Ringkasan WO Visit${MITRA_SEL?' — '+esc(MITRA_SEL):''}</h2><p>${nf(tot)} WO${M?' (Metabase)':''} · ${nf(todayN)} WO CLOSE hari ini · ${nf(urgM)} mitra memiliki WO OPEN Over SLA</p></div>
+  el.innerHTML=`<div class="hero-l"><div class="hero-k">${sal}</div><h2>Ringkasan WO Visit${MITRA_SEL?' — '+esc(MITRA_SEL):''}</h2><p>${nf(tot)} WO${M?' (Metabase)':''} · <b>${nf(hi.tot)} WO dibuat hari ini</b> · ${nf(todayN)} WO CLOSE hari ini · ${nf(urgM)} mitra memiliki WO OPEN Over SLA</p></div>
    <div class="hero-ring" style="--p:${cr.toFixed(1)}"><div class="rin"><b>${cr.toFixed(1).replace('.',',')}%</b><span>WO CLOSE</span></div></div>
-   <div class="hero-t">${tile('WO CLOSE',close,'#34D399',tot?close/tot*100:0)}${tile('WO OPEN',open,'#60A5FA',tot?open/tot*100:0)}${tile('WO CANCEL',cancel,'#F87171',tot?cancel/tot*100:0)}${tile('Over SLA',ov,'#FBBF24',tot?ov/tot*100:0)}</div>`;
+   <div class="hero-t">${tile('WO CLOSE · dibuat hari ini',hi.close,'#34D399',hi.tot?hi.close/hi.tot*100:0)}${tile('WO OPEN · dibuat hari ini',hi.open,'#60A5FA',hi.tot?hi.open/hi.tot*100:0)}${tile('WO CANCEL · dibuat hari ini',hi.cancel,'#F87171',hi.tot?hi.cancel/hi.tot*100:0)}${tile('Over SLA · dibuat hari ini',hi.ov,'#FBBF24',hi.tot?hi.ov/hi.tot*100:0)}</div>`;
 }
 
 function saveScroll(){ try{ sessionStorage.setItem('sl_scroll',JSON.stringify({v:VIEW,y:Math.round(window.scrollY||0)})); }catch(e){} }
@@ -1912,15 +1920,29 @@ function renderMitra(){
 /* ============================================================
    KPI MITRA
    ============================================================ */
-let KM={mode:'auto',min:20,best:85,watch:70,tier:'all',q:'',sort:'rank',dir:1};
+let KM={mode:'auto',min:20,best:85,watch:70,tier:'all',q:'',sort:'rank',dir:1,by:'mitra',stn:''}; // v19: by = 'mitra' | 'stasiun', stn = filter stasiun
 try{ const s=JSON.parse(localStorage.getItem('starlite_km_v1')||'null'); if(s) KM=Object.assign(KM,s,{tier:'all',q:''}); }catch(e){}
-const KM_W={sla:.35,close:.30,back:.20,speed:.10,cancel:.05};
+const KM_W={sla:.37,close:.30,back:.20,speed:.10,cancel:.03}; // v19: bobot cancel 5% -> 3% (2% dipindah ke Ketepatan SLA)
 const TIER={BEST:{l:'Terbaik',c:'#2FB584'},GOOD:{l:'Baik',c:'#2E8BFF'},WATCH:{l:'Perlu diawasi',c:'#DC2626'},DATA:{l:'Data kurang',c:'#94A3B8'}};
 const qtl=(arr,p)=>arr.length?arr[Math.min(arr.length-1,Math.floor(p*(arr.length-1)))]:0;
 let KM_CALC=null;
+const kmStn=r=>r.stasiun||r.region||'(Tanpa Stasiun)';
+function kmRows(){ return KM.stn?ALL_ROWS.filter(r=>kmStn(r)===KM.stn):ALL_ROWS; }
+function kmKey(r){ return KM.by==='stasiun'?kmStn(r):r.mitra; }
+function kmTo(name){ toTable(KM.by==='stasiun'?{stasiun:name}:Object.assign({mitra:name},KM.stn?{stasiun:KM.stn}:{})); }
+const kmLbl=()=>KM.by==='stasiun'?'Stasiun':'Mitra';
+function renderKmBar(){
+  const el=$('kmBar'); if(!el) return;
+  const stns=[...new Set(ALL_ROWS.map(kmStn))].sort((a,b)=>a.localeCompare(b));
+  el.innerHTML=`<div class="fld"><label for="kmBy">Lihat penilaian per</label><select id="kmBy"><option value="mitra"${KM.by==='mitra'?' selected':''}>Mitra</option><option value="stasiun"${KM.by==='stasiun'?' selected':''}>Stasiun</option></select></div>
+    <div class="fld"><label for="kmStn">Stasiun</label><select id="kmStn"><option value="">Semua stasiun (${nf(stns.length)})</option>${stns.map(x=>`<option value="${esc(x)}"${KM.stn===x?' selected':''}>${esc(x)}</option>`).join('')}</select></div>
+    <div class="fld" style="align-self:end;font-size:12px;color:var(--mute)">${KM.stn?'Menilai '+(KM.by==='stasiun'?'stasiun':'mitra')+' di stasiun <b>'+esc(KM.stn)+'</b> saja':'Semua stasiun'}</div>`;
+  $('kmBy').onchange=e=>{ KM.by=e.target.value; KM.tier='all'; renderKpiMitra(); };
+  $('kmStn').onchange=e=>{ KM.stn=e.target.value; KM.tier='all'; renderKpiMitra(); };
+}
 function calcMitra(){
   const by={};
-  ALL_ROWS.forEach(r=>{ const m=by[r.mitra]=by[r.mitra]||{name:r.mitra,total:0,close:0,open:0,cancel:0,closeOk:0,openOver:0,durSum:0,durN:0};
+  kmRows().forEach(r=>{ const key=kmKey(r); const m=by[key]=by[key]||{name:key,total:0,close:0,open:0,cancel:0,closeOk:0,openOver:0,durSum:0,durN:0};
     m.total++;
     if(r.st==='SELESAI'){ m.close++; if(r.sla!=='OVER') m.closeOk++; if(r.dur!=null){ m.durSum+=r.dur; m.durN++; } }
     else if(r.st==='CANCEL') m.cancel++;
@@ -1952,7 +1974,11 @@ function rankRow(m,i,kind){
     <div class="sc"><b style="color:${col}">${f1(m.score)}</b><small>skor</small></div></div>`;
 }
 function renderKpiMitra(){
+  renderKmBar();
   const C=calcMitra(), arr=C.arr, el=arr.filter(m=>m.ok);
+  [['kmBest','Terbaik'],['kmWatch','Perlu diawasi']].forEach(([id,t])=>{ const h=$(id)&&$(id).parentElement.querySelector('h2'); if(h) h.textContent=kmLbl()+' '+t.toLowerCase(); });
+  const ht=$('kmTableSec')&&$('kmTableSec').querySelector('h2'); if(ht) ht.textContent='Peringkat semua '+kmLbl().toLowerCase()+(KM.stn?' · '+KM.stn:'');
+  if($('kmSearch')) $('kmSearch').placeholder='Cari '+kmLbl().toLowerCase();
   const cnt={BEST:0,GOOD:0,WATCH:0,DATA:0}; arr.forEach(m=>cnt[m.tier]++);
   const sub={BEST:'Skor tinggi dan backlog terlambat rendah',GOOD:'Kinerja di rentang tengah',WATCH:'Skor rendah atau backlog terlambat tinggi',DATA:'WO aktif kurang dari '+KM.min+', belum dinilai'};
   $('kmTiers').innerHTML=['BEST','GOOD','WATCH','DATA'].map(k=>`<button class="tier${KM.tier===k?' on':''}" data-t="${k}" style="--c:${TIER[k].c}"><div class="l">${ic(k==='BEST'?'trophy':k==='GOOD'?'circle-check':k==='WATCH'?'triangle-alert':'activity')}${TIER[k].l}</div><div class="n">${nf(cnt[k])}</div><div class="s">${sub[k]}</div></button>`).join('');
@@ -1962,7 +1988,7 @@ function renderKpiMitra(){
   const watch=el.filter(m=>m.tier==='WATCH').sort((a,b)=>a.score-b.score).slice(0,5);
   $('kmBest').innerHTML=bestFill.length?bestFill.map((m,i)=>rankRow(m,i,'best')).join(''):'<div class="empty">Belum ada mitra dengan volume cukup.</div>';
   $('kmWatch').innerHTML=watch.length?watch.map((m,i)=>rankRow(m,i,'watch')).join(''):'<div class="empty">Tidak ada mitra yang perlu diawasi.</div>';
-  document.querySelectorAll('#kmBest .rank-row,#kmWatch .rank-row').forEach(r=>r.addEventListener('click',()=>toTable({mitra:r.dataset.m})));
+  document.querySelectorAll('#kmBest .rank-row,#kmWatch .rank-row').forEach(r=>r.addEventListener('click',()=>kmTo(r.dataset.m)));
   // peta kinerja
   emptyChart('kmBox','chKm','Belum ada mitra dengan volume cukup.',!el.length);
   if(chartBase()){ destroy('km'); if(el.length){
@@ -1974,16 +2000,16 @@ function renderKpiMitra(){
       options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10}},
         tooltip:{callbacks:{title:it=>it[0].raw.m.name,label:c=>{const m=c.raw.m; return [` Skor ${f1(m.score)} · ${nf(m.total)} WO`,` Dalam SLA ${pc(m.slaRate)} · Selesai ${pc(m.closeRate)}`,` Backlog terlambat ${nf(m.openOver)}`];}}}},
         scales:{ x:{min:ax[0],max:ax[1],title:{display:true,text:'% WO CLOSE dalam SLA'},grid:{color:GRID}}, y:{min:ay[0],max:ay[1],title:{display:true,text:'% WO selesai'},grid:{color:GRID}} },
-        onClick:(e,els)=>{ if(els.length){ const p=charts.km.data.datasets[els[0].datasetIndex].data[els[0].index]; toTable({mitra:p.m.name}); } } } }); } }
+        onClick:(e,els)=>{ if(els.length){ const p=charts.km.data.datasets[els[0].datasetIndex].data[els[0].index]; kmTo(p.m.name); } } } }); } }
   // rumus
   const thr=KM.mode==='auto'&&C.eligible>=5?`Terbaik: skor ≥ ${f1(C.best)} (20% teratas) dan backlog terlambat < 5%. Perlu diawasi: skor ≤ ${f1(C.watch)} (20% terbawah) atau backlog terlambat ≥ 15%.`:`Terbaik: skor ≥ ${KM.best} dan backlog terlambat < 5%. Perlu diawasi: skor < ${KM.watch} atau backlog terlambat ≥ 15%.`;
   $('kmFormula').innerHTML=`<div class="panel-head"><div><h2>Rumus penilaian mitra</h2><div class="sub">Skor 0–100 dari lima komponen. Hanya WO CLOSE, OPEN, dan CANCEL unik; Over SLA mengikuti kolom Status SLA (H).</div></div></div>
     <div class="formula">
-      <div class="fcell"><b>35%</b><span><strong>Ketepatan SLA</strong><br>% WO CLOSE yang tidak Over SLA</span></div>
-      <div class="fcell"><b>30%</b><span><strong>Penyelesaian</strong><br>WO CLOSE ÷ (total WO − CANCEL)</span></div>
-      <div class="fcell"><b>20%</b><span><strong>Backlog terlambat</strong><br>100 − 5 × % WO OPEN yang Over SLA</span></div>
-      <div class="fcell"><b>10%</b><span><strong>Kecepatan</strong><br>Peringkat rata-rata SLA (Visit Completed − WO Created); tercepat = 100</span></div>
-      <div class="fcell"><b>5%</b><span><strong>Cancel</strong><br>100 − 5 × % WO CANCEL</span></div>
+      <div class="fcell"><b>${Math.round(KM_W.sla*100)}%</b><span><strong>Ketepatan SLA</strong><br>% WO CLOSE yang tidak Over SLA</span></div>
+      <div class="fcell"><b>${Math.round(KM_W.close*100)}%</b><span><strong>Penyelesaian</strong><br>WO CLOSE ÷ (total WO − CANCEL)</span></div>
+      <div class="fcell"><b>${Math.round(KM_W.back*100)}%</b><span><strong>Backlog terlambat</strong><br>100 − 5 × % WO OPEN yang Over SLA</span></div>
+      <div class="fcell"><b>${Math.round(KM_W.speed*100)}%</b><span><strong>Kecepatan</strong><br>Peringkat rata-rata SLA (Visit Completed − WO Created); tercepat = 100</span></div>
+      <div class="fcell"><b>${Math.round(KM_W.cancel*100)}%</b><span><strong>Cancel</strong><br>100 − 5 × % WO CANCEL</span></div>
     </div>
     <ul class="fnote"><li>${esc(thr)}</li><li>Mitra dengan WO aktif (total − cancel) kurang dari <b>${KM.min}</b> ditandai "Data kurang" dan tidak masuk peringkat.</li><li>Kolom Catatan menunjukkan titik lemah: SLA di bawah 60%, selesai di bawah 85%, backlog terlambat ≥ 10%, cancel ≥ 10%.</li></ul>
     <div class="kmset"><div class="fld"><label for="kmMode">Batas kelompok</label><select id="kmMode"><option value="auto"${KM.mode==='auto'?' selected':''}>Otomatis (persentil)</option><option value="manual"${KM.mode==='manual'?' selected':''}>Manual (skor)</option></select></div>
@@ -1994,17 +2020,18 @@ function renderKpiMitra(){
   // tabel
   $('kmChips').innerHTML=[['all','Semua ('+nf(arr.length)+')'],...['BEST','GOOD','WATCH','DATA'].map(k=>[k,TIER[k].l+' ('+nf(cnt[k])+')'])].map(([k,l])=>`<button class="chip ${KM.tier===k?'bd-low':'bd-none'}" data-t="${k}" style="border:none;cursor:pointer">${l}</button>`).join('');
   $('kmChips').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{ KM.tier=b.dataset.t; renderKpiMitra(); }));
-  const cols=[['rank','#'],['name','Mitra'],['total','Total WO'],['close','CLOSE'],['open','OPEN'],['cancel','CANCEL'],['closeRate','% Selesai'],['slaRate','% Dalam SLA'],['avg','Rata-rata SLA'],['openOver','OPEN Over SLA'],['score','Skor'],['tier','Status'],['flags','Catatan']];
+  const cols=[['rank','#'],['name',kmLbl()],['total','Total WO'],['close','CLOSE'],['open','OPEN'],['cancel','CANCEL'],['closeRate','% Selesai'],['slaRate','% Dalam SLA'],['avg','Rata-rata SLA'],['openOver','OPEN Over SLA'],['score','Skor'],['tier','Status'],['flags','Catatan']];
   $('kmHead').innerHTML='<tr>'+cols.map(([k,l])=>`<th class="${k==='flags'?'':'sortable'}${['total','close','open','cancel','closeRate','slaRate','avg','openOver','score'].includes(k)?' num':''}" data-k="${k}">${l}${KM.sort===k?(KM.dir>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>';
   $('kmHead').querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>{ const k=th.dataset.k; KM.dir=KM.sort===k?-KM.dir:(k==='name'||k==='rank'?1:-1); KM.sort=k; renderKpiMitra(); }));
   let rows=arr.filter(m=>(KM.tier==='all'||m.tier===KM.tier)&&(!KM.q||m.name.toLowerCase().includes(KM.q)));
   const val=m=>KM.sort==='rank'?m.rank:KM.sort==='tier'?['BEST','GOOD','WATCH','DATA'].indexOf(m.tier):KM.sort==='avg'?(m.avg==null?1e9:m.avg):m[KM.sort];
   rows.sort((a,b)=>{ const x=val(a),y=val(b); return (typeof x==='string'?x.localeCompare(y):x-y)*KM.dir||a.name.localeCompare(b.name); });
-  $('kmSub').textContent=`${nf(rows.length)} mitra ditampilkan · ${nf(C.eligible)} mitra dinilai · klik baris untuk melihat WO mitra · mitra berdata kurang diberi nomor setelah mitra yang dinilai`;
+  const lb=kmLbl().toLowerCase();
+  $('kmSub').textContent=`${nf(rows.length)} ${lb} ditampilkan · ${nf(C.eligible)} ${lb} dinilai${KM.stn?' · stasiun '+KM.stn:''} · klik baris untuk melihat WO · ${lb} berdata kurang diberi nomor setelah yang dinilai`;
   $('kmBody').innerHTML=rows.map(m=>`<tr data-m="${esc(m.name)}" style="cursor:pointer"><td>${m.rank}</td><td class="nw"><b>${esc(m.name)}</b></td><td class="num">${nf(m.total)}</td><td class="num">${nf(m.close)}</td><td class="num">${nf(m.open)}</td><td class="num">${nf(m.cancel)}</td><td class="num">${pc(m.closeRate)}</td><td class="num">${m.close?pc(m.slaRate):'–'}</td><td class="num nw">${m.avg==null?'–':fmtDur(m.avg)}</td><td class="num">${nf(m.openOver)}</td><td class="num"><b>${f1(m.score)}</b></td><td><span class="tier-badge tb-${m.tier}">${TIER[m.tier].l}</span></td><td class="wrap-cell" style="min-width:180px">${esc(m.flags.join(' · '))||'<span class="sub-mute">–</span>'}</td></tr>`).join('')||'<tr><td colspan="13"><div class="empty">Tidak ada mitra yang cocok.</div></td></tr>';
-  $('kmBody').querySelectorAll('tr[data-m]').forEach(tr=>tr.addEventListener('click',()=>toTable({mitra:tr.dataset.m})));
+  $('kmBody').querySelectorAll('tr[data-m]').forEach(tr=>tr.addEventListener('click',()=>kmTo(tr.dataset.m)));
   const csv=()=>rows;
-  $('kmCsv').onclick=()=>{ if(!rows.length) return toast('Tidak ada data'); download(new Blob(['﻿'+Papa.unparse(rows.map(m=>({Peringkat:m.rank,Mitra:m.name,'Total WO':m.total,CLOSE:m.close,OPEN:m.open,CANCEL:m.cancel,'% Selesai':+(m.closeRate*100).toFixed(1),'% Dalam SLA':+(m.slaRate*100).toFixed(1),'Rata-rata SLA (jam)':m.avg==null?'':+m.avg.toFixed(2),'OPEN Over SLA':m.openOver,Skor:+m.score.toFixed(1),Status:TIER[m.tier].l,Catatan:m.flags.join('; ')})))],{type:'text/csv;charset=utf-8;'}),`KPI_Mitra_${stamp()}.csv`); toast('CSV diunduh'); };
+  $('kmCsv').onclick=()=>{ if(!rows.length) return toast('Tidak ada data'); download(new Blob(['﻿'+Papa.unparse(rows.map(m=>({Peringkat:m.rank,[kmLbl()]:m.name,'Total WO':m.total,CLOSE:m.close,OPEN:m.open,CANCEL:m.cancel,'% Selesai':+(m.closeRate*100).toFixed(1),'% Dalam SLA':+(m.slaRate*100).toFixed(1),'Rata-rata SLA (jam)':m.avg==null?'':+m.avg.toFixed(2),'OPEN Over SLA':m.openOver,Skor:+m.score.toFixed(1),Status:TIER[m.tier].l,Catatan:m.flags.join('; ')})))],{type:'text/csv;charset=utf-8;'}),`KPI_Mitra_${stamp()}.csv`); toast('CSV diunduh'); };
 }
 
 /* ---------- Tabel ---------- */
